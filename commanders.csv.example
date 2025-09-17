@@ -1,0 +1,9 @@
+ip,store,group,brand,enabled
+192.168.1.100,Store 001,North Region,Chevron,true
+192.168.1.101,Store 002,North Region,Shell,true
+192.168.1.102,Store 003,South Region,Conoco,true
+192.168.1.103,Store 004,South Region,Unbranded,false
+192.168.1.104,Store 005,East Region,Exxon,true
+192.168.1.105,Store 006,East Region,BP,true
+192.168.1.106,Store 007,West Region,Chevron,true
+192.168.1.107,Store 008,West Region,Shell,false

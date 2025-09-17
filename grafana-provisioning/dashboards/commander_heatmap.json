@@ -1,0 +1,280 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 3,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "gridPos": { "h": 25, "w": 24, "x": 0, "y": 0 },
+      "type": "table",
+      "title": "PosProctor Fleet Status Heatmap",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "min by (store, group, ip, brand) (posproctor_controller_status{group=~'$group', brand=~'$brand'})",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "B", 
+          "expr": "min by (store, group, ip, brand) (posproctor_pump_status{group=~'$group', brand=~'$brand'})",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "C",
+          "expr": "min by (store, group, ip, brand) (posproctor_dcr_status{group=~'$group', brand=~'$brand'})",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "D",
+          "expr": "min by (store, group, ip, brand) (posproctor_price_display_status{group=~'$group', brand=~'$brand'})",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "E",
+          "expr": "min by (store, group, ip, brand) (posproctor_loyalty_fep_status{group=~'$group', brand=~'$brand'})",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "__name__": true,
+              "job": true,
+              "instance": true,
+              "Time": true
+            },
+            "indexByName": {
+              "store": 0,
+              "group": 1,
+              "brand": 2
+            },
+            "renameByName": {
+              "store": "Store",
+              "group": "Group", 
+              "brand": "Brand",
+              "ip": "IP",
+              "Value #A": "Controller",
+              "Value #B": "Pumps",
+              "Value #C": "DCRs", 
+              "Value #D": "Fuel Signs",
+              "Value #E": "Loyalty"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Group",
+                "desc": false
+              },
+              {
+                "field": "Store",
+                "desc": false
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "align": "center",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Store" },
+            "properties": [
+              { "id": "custom.width", "value": 120 },
+              { "id": "links", "value": [
+                {
+                  "title": "Open Commander UI",
+                  "url": "https://${__data.fields.IP}/ConfigClient.html",
+                  "targetBlank": true
+                }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Group" },
+            "properties": [
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Brand" },
+            "properties": [
+              { "id": "custom.width", "value": 120 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "IP" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Controller" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "1": { "text": "✓", "color": "green" }, "0": { "text": "✗", "color": "red" } } }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Pumps" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "1": { "text": "✓", "color": "green" }, "0": { "text": "✗", "color": "red" } } }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "DCRs" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "1": { "text": "✓", "color": "green" }, "0": { "text": "✗", "color": "red" } } }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Fuel Signs" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "1": { "text": "✓", "color": "green" }, "0": { "text": "✗", "color": "red" } } }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Loyalty" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "1": { "text": "✓", "color": "green" }, "0": { "text": "✗", "color": "red" } } }
+              ]}
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": ["sum"],
+          "countRows": false
+        }
+      }
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": ["production", "monitoring", "posproctor", "heatmap"],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(posproctor_scrape_success, group)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "group",
+        "options": [],
+        "query": "label_values(posproctor_scrape_success, group)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(posproctor_scrape_success{group=~\"$group\"}, brand)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "brand",
+        "options": [],
+        "query": "label_values(posproctor_scrape_success{group=~\"$group\"}, brand)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "PosProctor Heatmap",
+  "uid": "2-posproctor-heatmap",
+  "version": 1
+}

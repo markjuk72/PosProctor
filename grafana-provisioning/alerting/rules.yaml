@@ -1,0 +1,238 @@
+groups:
+  - name: posproctor_alerts
+    folder: PosProctor_Alerts
+    interval: 1m
+    rules:
+      - uid: controller-offline
+        title: Controller Offline
+        condition: A
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: posproctor_controller_status == 0
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+        intervalSeconds: 60
+        maxNoDataTimeoutSeconds: 300
+        noDataState: NoData
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          summary: "🚨 {{ $labels.store }} ({{ $labels.group }}) - Controller Offline"
+          description: |
+            **FORECOURT CONTROLLER OFFLINE**
+
+            📍 **Location:** {{ $labels.store }}, {{ $labels.group }}
+            🎛️ **Device:** Forecourt Controller (Main System)
+            🌐 **Commander:** {{ $labels.ip }}
+            ⚠️ **Impact:** All pumps and devices may be affected
+            ⏰ **Time:** {{ .StartsAt.Format "Jan 02, 2006 at 3:04 PM" }}
+
+            🔗 **Actions:**
+            • [Open Commander UI](https://{{ $labels.ip }}/ConfigClient.html)
+            • [View in Grafana]({{ .GeneratorURL }})
+
+            **Priority:** HIGH - Controller controls all forecourt devices
+        labels:
+          severity: critical
+
+      - uid: pump-offline
+        title: Pump Offline
+        condition: A
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: posproctor_pump_status == 0
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+        intervalSeconds: 60
+        maxNoDataTimeoutSeconds: 300
+        noDataState: NoData
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          summary: "🚨 {{ $labels.store }} ({{ $labels.group }}) - Pump {{ $labels.fueling_point_id }} Offline"
+          description: |
+            **FUEL PUMP OFFLINE**
+
+            📍 **Location:** {{ $labels.store }}, {{ $labels.group }}
+            ⛽ **Device:** Fuel Pump {{ $labels.fueling_point_id }}
+            🌐 **Commander:** {{ $labels.ip }}
+            💰 **Impact:** Customers cannot fuel at this position
+            ⏰ **Time:** {{ .StartsAt.Format "Jan 02, 2006 at 3:04 PM" }}
+
+            🔗 **Actions:**
+            • [Open Commander UI](https://{{ $labels.ip }}/ConfigClient.html)
+            • [View in Grafana]({{ .GeneratorURL }})
+
+            **Priority:** MEDIUM - Single pump affected, others functional
+        labels:
+          severity: warning
+
+      - uid: dcr-offline
+        title: DCR Offline
+        condition: A
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: posproctor_dcr_status == 0
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+        intervalSeconds: 60
+        maxNoDataTimeoutSeconds: 300
+        noDataState: NoData
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          summary: "🚨 {{ $labels.store }} ({{ $labels.group }}) - DCR {{ $labels.fueling_point_id }} Offline"
+          description: |
+            **CARD READER OFFLINE**
+
+            📍 **Location:** {{ $labels.store }}, {{ $labels.group }}
+            💳 **Device:** Dispenser Card Reader (DCR) {{ $labels.fueling_point_id }}
+            🌐 **Commander:** {{ $labels.ip }}
+            💰 **Impact:** Customers cannot pay at pump, must pay inside
+            ⏰ **Time:** {{ .StartsAt.Format "Jan 02, 2006 at 3:04 PM" }}
+
+            🔗 **Actions:**
+            • [Open Commander UI](https://{{ $labels.ip }}/ConfigClient.html)
+            • [View in Grafana]({{ .GeneratorURL }})
+
+            **Priority:** MEDIUM - Payment processing affected at this pump
+        labels:
+          severity: warning
+
+      - uid: fuel-sign-offline
+        title: Fuel Sign Offline
+        condition: A
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: posproctor_price_display_status == 0
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+        intervalSeconds: 60
+        maxNoDataTimeoutSeconds: 300
+        noDataState: NoData
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          summary: "🚨 {{ $labels.store }} ({{ $labels.group }}) - Fuel Sign Offline"
+          description: |
+            **FUEL PRICE DISPLAY OFFLINE**
+
+            📍 **Location:** {{ $labels.store }}, {{ $labels.group }}
+            🖥️ **Device:** Fuel Price Display ({{ $labels.display_id }})
+            🌐 **Commander:** {{ $labels.ip }}
+            ⏰ **Time:** {{ .StartsAt.Format "Jan 02, 2006 at 3:04 PM" }}
+
+            🔗 **Actions:**
+            • [Open Commander UI](https://{{ $labels.ip }}/ConfigClient.html)
+            • [View in Grafana]({{ .GeneratorURL }})
+
+            **Priority:** MEDIUM - Price display unavailable to customers
+        labels:
+          severity: warning
+
+      - uid: loyalty-fep-offline
+        title: Loyalty FEP Offline
+        condition: A
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: posproctor_loyalty_fep_status == 0
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+        intervalSeconds: 60
+        maxNoDataTimeoutSeconds: 300
+        noDataState: NoData
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          summary: "🚨 {{ $labels.store }} ({{ $labels.group }}) - Rewards System Offline"
+          description: |
+            **REWARDS 2 GO SYSTEM OFFLINE**
+
+            📍 **Location:** {{ $labels.store }}, {{ $labels.group }}
+            🏆 **Device:** Loyalty FEP (REWARDS 2 GO)
+            🌐 **Commander:** {{ $labels.ip }}
+            💰 **Impact:** Customer loyalty points and discounts unavailable
+            ⏰ **Time:** {{ .StartsAt.Format "Jan 02, 2006 at 3:04 PM" }}
+
+            🔗 **Actions:**
+            • [Open Commander UI](https://{{ $labels.ip }}/ConfigClient.html)
+            • [View in Grafana]({{ .GeneratorURL }})
+
+            **Priority:** LOW - Sales continue but loyalty benefits unavailable
+        labels:
+          severity: info
+
+      - uid: commander-unreachable
+        title: Commander Unreachable
+        condition: A
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: posproctor_scrape_success == 0
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+        intervalSeconds: 60
+        maxNoDataTimeoutSeconds: 300
+        noDataState: NoData
+        execErrState: Alerting
+        for: 3m
+        annotations:
+          summary: "🚨 {{ $labels.store }} ({{ $labels.group }}) - Commander System Unreachable"
+          description: |
+            **COMMANDER SYSTEM UNREACHABLE**
+
+            📍 **Location:** {{ $labels.store }}, {{ $labels.group }}
+            🔌 **Device:** Commander System (Network/Power Issue)
+            🌐 **Commander:** {{ $labels.ip }}
+            ⚠️ **Impact:** Cannot monitor any devices - site may be down
+            ⏰ **Time:** {{ .StartsAt.Format "Jan 02, 2006 at 3:04 PM" }}
+
+            🔗 **Actions:**
+            • [Try Commander UI](https://{{ $labels.ip }}/ConfigClient.html) (may fail)
+            • [View in Grafana]({{ .GeneratorURL }})
+            • Check network connectivity and power
+
+            **Priority:** HIGH - Complete loss of monitoring/control
+        labels:
+          severity: critical

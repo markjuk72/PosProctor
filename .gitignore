@@ -1,0 +1,56 @@
+# Existing ignores
+sample_data/
+grafana-data/
+loki-data/
+prometheus-data/
+vector-data/
+credentials.yaml
+commanders.csv
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtualenv
+.venv/
+venv/
+ENV/
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Secrets
+*.local
+*.local.*
+secrets.yaml
+secrets.yml
+.env
+
+# Logs
+*.log
+
+# Docker
+docker-compose.override.yml

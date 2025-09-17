@@ -1,0 +1,55 @@
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+
+ingester:
+  wal:
+    enabled: true
+    dir: /loki/wal
+  lifecycler:
+    address: 0.0.0.0
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+  # Keep chunks in memory longer before flushing to disk
+  chunk_idle_period: 15m
+  chunk_target_size: 1048576
+  max_chunk_age: 1h
+  chunk_retain_period: 5m
+
+schema_config:
+  configs:
+    - from: 2025-05-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+storage_config:
+  tsdb_shipper:
+    active_index_directory: /loki/tsdb-index
+    cache_location: /loki/tsdb-cache
+    cache_ttl: 24h
+  filesystem:
+    directory: /loki/chunks
+
+compactor:
+  working_directory: /loki/compactor
+  compaction_interval: 10m
+  # Enable retention to automatically delete old logs
+  retention_enabled: true
+  delete_request_store: filesystem
+  # Set retention period (e.g., 7 days)
+  retention_delete_delay: 2h
+  retention_delete_worker_count: 1
+
+limits_config:
+  # Keep logs for 7 days (168 hours)
+  retention_period: 168h
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h

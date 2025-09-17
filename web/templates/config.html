@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Configuration - POSProctor{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-cog text-primary"></i> Configuration Management
+        </h1>
+    </div>
+</div>
+
+<form method="POST">
+    <div class="row">
+        <!-- Application Settings -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-sliders-h"></i> Application Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="scrape_interval_minutes" class="form-label">Scrape Interval (minutes)</label>
+                        <input type="number" class="form-control" id="scrape_interval_minutes"
+                               name="scrape_interval_minutes"
+                               value="{{ config.get('scrape_interval_minutes', 6) }}"
+                               min="1" max="60" required>
+                        <div class="form-text">How often to poll POS systems (1-60 minutes)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="timeout_seconds" class="form-label">Timeout (seconds)</label>
+                        <input type="number" class="form-control" id="timeout_seconds"
+                               name="timeout_seconds"
+                               value="{{ config.get('timeout_seconds', 30) }}"
+                               min="5" max="300" required>
+                        <div class="form-text">Network timeout for API calls (5-300 seconds)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loyalty Program Settings -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-gift"></i> Loyalty Program</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="loyalty_names" class="form-label">Program Names</label>
+                        <textarea class="form-control" id="loyalty_names" name="loyalty_names" rows="5">{% if config.get('loyalty_program', {}).get('names') %}{% for name in config.loyalty_program.names %}{{ name }}
+{% endfor %}{% endif %}</textarea>
+                        <div class="form-text">One program name per line (case insensitive)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Commander Credentials -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-key"></i> Commander Credentials</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username"
+                               value="{{ credentials.get('credentials', {}).get('username', '') }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password"
+                               value="{{ credentials.get('credentials', {}).get('password', '') }}" required>
+                        <div class="form-text">Password for Commander API authentication</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Important Notes -->
+        <div class="col-md-6">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Important Notes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> Scrape Interval Changes</h6>
+                        <p class="mb-0">When changing the scrape interval, also update <code>prometheus.yml</code>
+                        to be this value + 30 seconds to avoid scraping stale data.</p>
+                    </div>
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-sync-alt"></i> Restart Required</h6>
+                        <p class="mb-0">Configuration changes require restarting the POSProctor application
+                        to take effect.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> Save Configuration
+            </button>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary btn-lg ms-2">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </div>
+</form>
+
+<!-- Restart Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-sync-alt"></i> Apply Configuration Changes</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    <strong>After saving configuration changes, restart the POSProctor application to apply them.</strong>
+                </p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>What happens during restart:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>POSProctor application container is restarted</li>
+                        <li>New configuration files are loaded</li>
+                        <li>Monitoring resumes with updated settings</li>
+                        <li>Process takes approximately 10-15 seconds</li>
+                    </ul>
+                </div>
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-terminal"></i> Manual Restart Required</h6>
+                    <p class="mb-2">After saving configuration changes, restart POSProctor manually:</p>
+                    <code class="bg-dark text-light p-2 d-block">docker-compose restart posproctor-app</code>
+                    <small class="text-muted">Run this command from the project directory</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

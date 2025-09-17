@@ -1,0 +1,127 @@
+version: '3.8'
+services:
+  posproctor-app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    volumes:
+      - ./credentials.yaml:/app/credentials.yaml
+      - ./config.yaml:/app/config.yaml
+      - ./commanders.csv:/app/commanders.csv
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    command: ["python", "main.py"]
+    networks:
+      - posproctor-net
+
+  posproctor-web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    volumes:
+      - ./credentials.yaml:/app/data/credentials.yaml
+      - ./config.yaml:/app/data/config.yaml
+      - ./commanders.csv:/app/data/commanders.csv
+      - ./.env:/app/data/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    networks:
+      - posproctor-net
+
+  prometheus:
+    image: prom/prometheus:v2.53.1
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    user: "1000"
+    networks:
+      - posproctor-net
+
+  loki:
+    image: grafana/loki:3.0.0
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./config_loki.yaml:/etc/loki/config_loki.yaml
+    tmpfs:
+      - /tmp/loki:size=256M,uid=10001,gid=10001,mode=0755
+      - /loki/wal:size=256M,uid=10001,gid=10001,mode=0755
+      - /loki/tsdb-index:size=256M,uid=10001,gid=10001,mode=0755
+      - /loki/tsdb-cache:size=256M,uid=10001,gid=10001,mode=0755
+      - /loki/chunks:size=256M,uid=10001,gid=10001,mode=0755
+      - /loki/compactor:size=256M,uid=10001,gid=10001,mode=0755
+      - /loki/delete-requests:size=256M,uid=10001,gid=10001,mode=0755
+    command: -config.file=/etc/loki/config_loki.yaml -config.expand-env=true
+    networks:
+      - posproctor-net
+
+  vector:
+    image: timberio/vector:0.39.0-alpine
+    ports:
+      - "514:514/udp"
+    volumes:
+      - ./config_vector.yaml:/etc/vector/vector.yaml:ro
+      - ./commanders.csv:/etc/vector/store_mapping.csv:ro
+    command: --config /etc/vector/vector.yaml
+    networks:
+      - posproctor-net
+
+  grafana:
+    image: grafana/grafana:11.1.4
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana-provisioning:/etc/grafana/provisioning
+      - ./grafana-data:/var/lib/grafana
+      - ./graphics:/usr/share/grafana/public/img/posproctor
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin123}
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/posproctor_readme.json
+      # Email/SMTP Configuration
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_HOST=${SMTP_HOST:-smtp.gmail.com:587}
+      - GF_SMTP_USER=${SMTP_USER:-your-email@gmail.com}
+      - GF_SMTP_PASSWORD=${SMTP_PASSWORD:-your-app-password}
+      - GF_SMTP_FROM_ADDRESS=${SMTP_FROM:-your-email@gmail.com}
+      - GF_SMTP_FROM_NAME=${SMTP_FROM_NAME:-POSProctor Alert System}
+      - ALERT_EMAIL=${ALERT_EMAIL:-admin@example.com}
+    user: "1000"
+    restart: unless-stopped
+    networks:
+      - posproctor-net
+
+  node_exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: node_exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    networks:
+      - posproctor-net
+
+networks:
+  posproctor-net:
+    driver: bridge

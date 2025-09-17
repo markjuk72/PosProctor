@@ -1,0 +1,1021 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 2,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 20,
+      "panels": [],
+      "title": "Fleet Health Overview",
+      "type": "row"
+    },
+    {
+      "id": 12,
+      "gridPos": { "h": 6, "w": 4, "x": 0, "y": 1 },
+      "type": "stat",
+      "title": "Controllers",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(posproctor_controller_status{group=~'$group', brand=~'$brand'}) / count(posproctor_controller_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Health %"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(posproctor_controller_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Online"
+        },
+        {
+          "refId": "C", 
+          "expr": "posproctor_total_commanders{enabled='true'}",
+          "legendFormat": "Total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 1.0 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Health %" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "custom.hideFrom", "value": { "tooltip": false, "vis": true, "legend": false } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Online" },
+            "properties": [
+              { "id": "displayName", "value": "Online" },
+              { "id": "unit", "value": "none" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Total" },
+            "properties": [
+              { "id": "displayName", "value": "Total" },
+              { "id": "unit", "value": "none" },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "horizontal",
+        "textMode": "value_and_name",
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 13,
+      "gridPos": { "h": 6, "w": 4, "x": 4, "y": 1 },
+      "type": "stat",
+      "title": "Pumps",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(posproctor_pump_status{group=~'$group', brand=~'$brand'}) / count(posproctor_pump_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Health %"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(posproctor_pump_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Online"
+        },
+        {
+          "refId": "C",
+          "expr": "count(posproctor_pump_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 1.0 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Health %" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "custom.hideFrom", "value": { "tooltip": false, "vis": true, "legend": false } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Online" },
+            "properties": [
+              { "id": "displayName", "value": "Online" },
+              { "id": "unit", "value": "none" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Total" },
+            "properties": [
+              { "id": "displayName", "value": "Total" },
+              { "id": "unit", "value": "none" },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "horizontal", 
+        "textMode": "value_and_name",
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 14,
+      "gridPos": { "h": 6, "w": 4, "x": 8, "y": 1 },
+      "type": "stat",
+      "title": "DCRs",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(posproctor_dcr_status{group=~'$group', brand=~'$brand'}) / count(posproctor_dcr_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Health %"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(posproctor_dcr_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Online"
+        },
+        {
+          "refId": "C",
+          "expr": "count(posproctor_dcr_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 1.0 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Health %" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "custom.hideFrom", "value": { "tooltip": false, "vis": true, "legend": false } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Online" },
+            "properties": [
+              { "id": "displayName", "value": "Online" },
+              { "id": "unit", "value": "none" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Total" },
+            "properties": [
+              { "id": "displayName", "value": "Total" },
+              { "id": "unit", "value": "none" },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "horizontal",
+        "textMode": "value_and_name", 
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 10,
+      "gridPos": { "h": 6, "w": 4, "x": 12, "y": 1 },
+      "type": "stat",
+      "title": "Fuel Signs",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(posproctor_price_display_status{group=~'$group', brand=~'$brand'}) / count(posproctor_price_display_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Health %"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(posproctor_price_display_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Online"
+        },
+        {
+          "refId": "C",
+          "expr": "posproctor_total_commanders{enabled='true'}",
+          "legendFormat": "Total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 1.0 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Health %" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "custom.hideFrom", "value": { "tooltip": false, "vis": true, "legend": false } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Online" },
+            "properties": [
+              { "id": "displayName", "value": "Online" },
+              { "id": "unit", "value": "none" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Total" },
+            "properties": [
+              { "id": "displayName", "value": "Total" },
+              { "id": "unit", "value": "none" },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "horizontal",
+        "textMode": "value_and_name",
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 11,
+      "gridPos": { "h": 6, "w": 4, "x": 16, "y": 1 },
+      "type": "stat",
+      "title": "Loyalty",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(posproctor_loyalty_fep_status{group=~'$group', brand=~'$brand'}) / count(posproctor_loyalty_fep_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Health %"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(posproctor_loyalty_fep_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Online"
+        },
+        {
+          "refId": "C",
+          "expr": "posproctor_total_commanders{enabled='true'}",
+          "legendFormat": "Total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 1.0 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Health %" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "custom.hideFrom", "value": { "tooltip": false, "vis": true, "legend": false } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Online" },
+            "properties": [
+              { "id": "displayName", "value": "Online" },
+              { "id": "unit", "value": "none" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Total" },
+            "properties": [
+              { "id": "displayName", "value": "Total" },
+              { "id": "unit", "value": "none" },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "horizontal",
+        "textMode": "value_and_name",
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 30,
+      "gridPos": { "h": 6, "w": 4, "x": 20, "y": 1 },
+      "type": "stat",
+      "title": "Card Processor",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(posproctor_primary_fep_status{group=~'$group', brand=~'$brand'}) / count(posproctor_primary_fep_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Health %"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(posproctor_primary_fep_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Online"
+        },
+        {
+          "refId": "C",
+          "expr": "posproctor_total_commanders{enabled='true'}",
+          "legendFormat": "Total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 1.0 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Health %" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "custom.hideFrom", "value": { "tooltip": false, "vis": true, "legend": false } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Online" },
+            "properties": [
+              { "id": "displayName", "value": "Online" },
+              { "id": "unit", "value": "none" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Total" },
+            "properties": [
+              { "id": "displayName", "value": "Total" },
+              { "id": "unit", "value": "none" },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "horizontal",
+        "textMode": "value_and_name",
+        "colorMode": "value"
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 8 },
+      "id": 22,
+      "panels": [],
+      "title": "Fleet Health Trends",
+      "type": "row"
+    },
+    {
+      "id": 23,
+      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 9 },
+      "type": "timeseries",
+      "title": "Device Availability Over Time",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(posproctor_controller_status{group=~'$group', brand=~'$brand'}) / count(posproctor_controller_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Controllers"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(posproctor_pump_status{group=~'$group', brand=~'$brand'}) / count(posproctor_pump_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Pumps"
+        },
+        {
+          "refId": "C",
+          "expr": "sum(posproctor_dcr_status{group=~'$group', brand=~'$brand'}) / count(posproctor_dcr_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "DCRs"
+        },
+        {
+          "refId": "D",
+          "expr": "sum(posproctor_price_display_status{group=~'$group', brand=~'$brand'}) / count(posproctor_price_display_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Fuel Signs"
+        },
+        {
+          "refId": "E",
+          "expr": "sum(posproctor_loyalty_fep_status{group=~'$group', brand=~'$brand'}) / count(posproctor_loyalty_fep_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Loyalty"
+        },
+        {
+          "refId": "F",
+          "expr": "sum(posproctor_primary_fep_status{group=~'$group', brand=~'$brand'}) / count(posproctor_primary_fep_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Card Processor"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "auto",
+            "pointSize": 4,
+            "stacking": { "mode": "none", "group": "A" },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": { "type": "linear" },
+            "axisCenteredZero": false,
+            "hideFrom": { "legend": false, "tooltip": false, "vis": false },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }
+      }
+    },
+    {
+      "id": 26,
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 9 },
+      "type": "stat",
+      "title": "Health by Brand",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(\n  sum by (brand) (posproctor_controller_status{group=~'$group', brand=~'$brand'}) +\n  sum by (brand) (posproctor_pump_status{group=~'$group', brand=~'$brand'}) +\n  sum by (brand) (posproctor_dcr_status{group=~'$group', brand=~'$brand'}) +\n  sum by (brand) (posproctor_price_display_status{group=~'$group', brand=~'$brand'}) +\n  sum by (brand) (posproctor_loyalty_fep_status{group=~'$group', brand=~'$brand'}) +\n  sum by (brand) (posproctor_primary_fep_status{group=~'$group', brand=~'$brand'})\n) / (\n  count by (brand) (posproctor_controller_status{group=~'$group', brand=~'$brand'}) +\n  count by (brand) (posproctor_pump_status{group=~'$group', brand=~'$brand'}) +\n  count by (brand) (posproctor_dcr_status{group=~'$group', brand=~'$brand'}) +\n  count by (brand) (posproctor_price_display_status{group=~'$group', brand=~'$brand'}) +\n  count by (brand) (posproctor_loyalty_fep_status{group=~'$group', brand=~'$brand'}) +\n  count by (brand) (posproctor_primary_fep_status{group=~'$group', brand=~'$brand'})\n)",
+          "legendFormat": "{{brand}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 0.99 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "horizontal",
+        "textMode": "value_and_name",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "text": {
+          "titleSize": 20,
+          "valueSize": 28
+        }
+      },
+      "pluginVersion": "9.0.0",
+      "overrides": [
+        {
+          "matcher": { "id": "byName", "options": "Chevron" },
+          "properties": [
+            {
+              "id": "displayName",
+              "value": "⛽ Chevron"
+            }
+          ]
+        },
+        {
+          "matcher": { "id": "byName", "options": "Shell" },
+          "properties": [
+            {
+              "id": "displayName",
+              "value": "🐚 Shell"
+            }
+          ]
+        },
+        {
+          "matcher": { "id": "byName", "options": "Exxon" },
+          "properties": [
+            {
+              "id": "displayName",
+              "value": "🔥 Exxon"
+            }
+          ]
+        },
+        {
+          "matcher": { "id": "byName", "options": "Mobil" },
+          "properties": [
+            {
+              "id": "displayName",
+              "value": "🔴 Mobil"
+            }
+          ]
+        },
+        {
+          "matcher": { "id": "byName", "options": "Conoco" },
+          "properties": [
+            {
+              "id": "displayName",
+              "value": "⭐ Conoco"
+            }
+          ]
+        },
+        {
+          "matcher": { "id": "byName", "options": "76" },
+          "properties": [
+            {
+              "id": "displayName",
+              "value": "🟠 76"
+            }
+          ]
+        },
+        {
+          "matcher": { "id": "byName", "options": "Phillips 66" },
+          "properties": [
+            {
+              "id": "displayName",
+              "value": "🛡️ Phillips 66"
+            }
+          ]
+        },
+        {
+          "matcher": { "id": "byName", "options": "Valero" },
+          "properties": [
+            {
+              "id": "displayName",
+              "value": "💎 Valero"
+            }
+          ]
+        },
+        {
+          "matcher": { "id": "byName", "options": "Sinclair" },
+          "properties": [
+            {
+              "id": "displayName",
+              "value": "🦕 Sinclair"
+            }
+          ]
+        },
+        {
+          "matcher": { "id": "byName", "options": "Texaco" },
+          "properties": [
+            {
+              "id": "displayName",
+              "value": "⭐ Texaco"
+            }
+          ]
+        },
+        {
+          "matcher": { "id": "byName", "options": "Unbranded" },
+          "properties": [
+            {
+              "id": "displayName",
+              "value": "⚪ Unbranded"
+            }
+          ]
+        },
+        {
+          "matcher": { "id": "byName", "options": "Cenex" },
+          "properties": [
+            {
+              "id": "displayName",
+              "value": "🌾 Cenex"
+            }
+          ]
+        },
+        {
+          "matcher": { "id": "byName", "options": "Unknown" },
+          "properties": [
+            {
+              "id": "displayName",
+              "value": "❓ Unknown"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
+      "id": 24,
+      "panels": [],
+      "title": "Stores Requiring Attention",
+      "type": "row"
+    },
+    {
+      "id": 25,
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 19 },
+      "type": "table",
+      "title": "Commanders with Offline Devices",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "min by (store, group, ip, brand) (posproctor_controller_status{group=~'$group', brand=~'$brand'})",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "B", 
+          "expr": "min by (store, group, ip, brand) (posproctor_pump_status{group=~'$group', brand=~'$brand'})",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "C",
+          "expr": "min by (store, group, ip, brand) (posproctor_dcr_status{group=~'$group', brand=~'$brand'})",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "D",
+          "expr": "min by (store, group, ip, brand) (posproctor_price_display_status{group=~'$group', brand=~'$brand'})",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "E",
+          "expr": "min by (store, group, ip, brand) (posproctor_loyalty_fep_status{group=~'$group', brand=~'$brand'})",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "F",
+          "expr": "min by (store, group, ip, brand) (posproctor_primary_fep_status{group=~'$group', brand=~'$brand'})",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "__name__": true,
+              "job": true,
+              "instance": true,
+              "Time": true
+            },
+            "indexByName": {
+              "store": 0,
+              "group": 1,
+              "brand": 2,
+              "ip": 3
+            },
+            "renameByName": {
+              "store": "Store",
+              "group": "Group",
+              "brand": "Brand",
+              "ip": "IP",
+              "Value #A": "Controller",
+              "Value #B": "Pumps",
+              "Value #C": "DCRs",
+              "Value #D": "Fuel Signs",
+              "Value #E": "Loyalty",
+              "Value #F": "Card Processor"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Last Seen",
+                "desc": false
+              }
+            ]
+          }
+        },
+        {
+          "id": "filterByValue", 
+          "options": {
+            "filters": [
+              {
+                "fieldName": "Controller",
+                "config": {
+                  "id": "equal",
+                  "options": {
+                    "value": 0
+                  }
+                }
+              },
+              {
+                "fieldName": "Pumps",
+                "config": {
+                  "id": "equal",
+                  "options": {
+                    "value": 0
+                  }
+                }
+              },
+              {
+                "fieldName": "DCRs",
+                "config": {
+                  "id": "equal", 
+                  "options": {
+                    "value": 0
+                  }
+                }
+              },
+              {
+                "fieldName": "Fuel Signs",
+                "config": {
+                  "id": "equal",
+                  "options": {
+                    "value": 0
+                  }
+                }
+              },
+              {
+                "fieldName": "Loyalty",
+                "config": {
+                  "id": "equal",
+                  "options": {
+                    "value": 0
+                  }
+                }
+              },
+              {
+                "fieldName": "Card Processor",
+                "config": {
+                  "id": "equal",
+                  "options": {
+                    "value": 0
+                  }
+                }
+              }
+            ],
+            "type": "include",
+            "match": "any"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "align": "center",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Store" },
+            "properties": [
+              { "id": "custom.width", "value": 120 },
+              { "id": "links", "value": [
+                {
+                  "title": "Open Commander UI",
+                  "url": "https://${__data.fields.IP}/ConfigClient.html",
+                  "targetBlank": true
+                }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Group" },
+            "properties": [
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Brand" },
+            "properties": [
+              { "id": "custom.width", "value": 120 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "IP" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Controller" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "1": { "text": "✓", "color": "green" }, "0": { "text": "✗", "color": "red" } } }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Pumps" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "1": { "text": "✓", "color": "green" }, "0": { "text": "✗", "color": "red" } } }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "DCRs" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "1": { "text": "✓", "color": "green" }, "0": { "text": "✗", "color": "red" } } }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Fuel Signs" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "1": { "text": "✓", "color": "green" }, "0": { "text": "✗", "color": "red" } } }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Loyalty" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "1": { "text": "✓", "color": "green" }, "0": { "text": "✗", "color": "red" } } }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Card Processor" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "1": { "text": "✓", "color": "green" }, "0": { "text": "✗", "color": "red" } } }
+              ]}
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": ["sum"],
+          "countRows": false
+        }
+      }
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": ["production", "monitoring", "posproctor", "fleet"],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(posproctor_scrape_success, group)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "group",
+        "options": [],
+        "query": "label_values(posproctor_scrape_success, group)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(posproctor_scrape_success{group=~\"$group\"}, brand)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "brand",
+        "options": [],
+        "query": "label_values(posproctor_scrape_success{group=~\"$group\"}, brand)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "PosProctor Monitor",
+  "uid": "1-posproctor-monitor",
+  "version": 4
+}

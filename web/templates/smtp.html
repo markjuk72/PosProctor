@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}SMTP Settings - POSProctor{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-envelope text-primary"></i> SMTP Configuration
+        </h1>
+        <p class="lead">Configure email settings for Grafana alerts and notifications</p>
+    </div>
+</div>
+
+<form method="POST">
+    <div class="row">
+        <!-- SMTP Server Settings -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-server"></i> SMTP Server</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="smtp_host" class="form-label">SMTP Host</label>
+                        <input type="text" class="form-control" id="smtp_host" name="smtp_host"
+                               placeholder="smtp.gmail.com:587" required>
+                        <div class="form-text">Include port number (e.g., smtp.gmail.com:587)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="smtp_user" class="form-label">Username</label>
+                        <input type="email" class="form-control" id="smtp_user" name="smtp_user"
+                               placeholder="your-email@gmail.com" required>
+                        <div class="form-text">Your email address for authentication</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="smtp_password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="smtp_password" name="smtp_password"
+                               placeholder="App password or account password" required>
+                        <div class="form-text">For Gmail, use an App Password, not your account password</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Settings -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-envelope-open"></i> Email Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="smtp_from" class="form-label">From Address</label>
+                        <input type="email" class="form-control" id="smtp_from" name="smtp_from"
+                               placeholder="your-email@gmail.com" required>
+                        <div class="form-text">Email address that alerts will be sent from</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="smtp_from_name" class="form-label">From Name</label>
+                        <input type="text" class="form-control" id="smtp_from_name" name="smtp_from_name"
+                               placeholder="POSProctor Alert System" required>
+                        <div class="form-text">Display name for outgoing emails</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="alert_email" class="form-label">Alert Recipient</label>
+                        <input type="email" class="form-control" id="alert_email" name="alert_email"
+                               placeholder="admin@example.com" required>
+                        <div class="form-text">Email address to receive alerts</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gmail Setup Instructions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fab fa-google"></i> Gmail Setup Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li><strong>Enable 2-Factor Authentication</strong> on your Google account</li>
+                        <li>Go to <a href="https://myaccount.google.com/apppasswords" target="_blank">Google App Passwords</a></li>
+                        <li>Generate a new App Password for "POSProctor"</li>
+                        <li>Use this 16-character password in the Password field above</li>
+                        <li>Set SMTP Host to: <code>smtp.gmail.com:587</code></li>
+                    </ol>
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Security Note:</strong> Never use your actual Google password. Always use App Passwords for applications.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Email -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-paper-plane"></i> Test Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <p>After saving, you can test your email configuration by:</p>
+                    <ul>
+                        <li>Creating a test alert in Grafana</li>
+                        <li>Checking Grafana logs for SMTP errors</li>
+                        <li>Verifying emails are received at the alert recipient address</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-sync-alt"></i> Apply Changes</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Important:</strong> After saving SMTP settings, you must restart the entire stack for changes to take effect:</p>
+                    <code>docker-compose down && docker-compose up -d</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> Save SMTP Settings
+            </button>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary btn-lg ms-2">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </div>
+</form>
+{% endblock %}

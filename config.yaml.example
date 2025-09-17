@@ -1,0 +1,26 @@
+# Primary polling interval - Controls how often the Python app queries POS systems
+# IMPORTANT: When you change this, also update prometheus.yml scrape_interval to (this_value + 30 seconds)
+# Example: 6 minutes here → 6m30s in prometheus.yml to avoid scraping stale data
+# Common values: 5, 6, or 10 minutes
+scrape_interval_minutes: 6
+
+# Network timeout for POS system API calls
+# Increase if you have slow network connections or distant POS systems
+timeout_seconds: 30
+
+# Configuration Examples for Different Deployment Scenarios:
+#
+# Fast Polling (High Network Capacity):
+# scrape_interval_minutes: 5
+# → Update prometheus.yml to: scrape_interval: 5m30s
+#
+# Standard Polling (Most Deployments):
+# scrape_interval_minutes: 6
+# → Update prometheus.yml to: scrape_interval: 6m30s
+#
+# Conservative Polling (Limited Network/High Latency):
+# scrape_interval_minutes: 10
+# → Update prometheus.yml to: scrape_interval: 10m30s
+#
+# Remember to restart both services after making changes:
+# docker-compose restart posproctor-app prometheus

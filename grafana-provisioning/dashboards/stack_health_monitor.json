@@ -1,0 +1,894 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 3,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 30,
+      "panels": [],
+      "title": "Stack Health Overview",
+      "type": "row"
+    },
+    {
+      "id": 2,
+      "gridPos": { "h": 6, "w": 4, "x": 0, "y": 1 },
+      "type": "stat", 
+      "title": "Prometheus Status",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "vector(1)",
+          "legendFormat": "Prometheus"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+          ]
+        }
+      }
+    },
+    {
+      "id": 3,
+      "gridPos": { "h": 6, "w": 4, "x": 4, "y": 1 },
+      "type": "stat",
+      "title": "Success Rate",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "avg(posproctor_scrape_success{group=~'$group'})",
+          "legendFormat": "Success Rate"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 0.8 },
+              { "color": "green", "value": 0.95 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "gridPos": { "h": 6, "w": 4, "x": 8, "y": 1 },
+      "type": "stat",
+      "title": "Total Enabled Commanders",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "posproctor_total_commanders{enabled='true'}",
+          "legendFormat": "Total Enabled"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "blue" }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "gridPos": { "h": 6, "w": 4, "x": 12, "y": 1 },
+      "type": "stat",
+      "title": "Failed Commanders",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(posproctor_scrape_success{group=~'$group'} == 0)",
+          "legendFormat": "Failed"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "red" }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "gridPos": { "h": 6, "w": 4, "x": 16, "y": 1 },
+      "type": "stat",
+      "title": "Scrape Interval",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "posproctor_app_info",
+          "legendFormat": "{{ scrape_interval }} min"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "purple" },
+          "mappings": [
+            { "type": "regex", "options": { "pattern": ".*", "result": { "text": "${__field.labels.scrape_interval} min" } } }
+          ]
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "name"
+      }
+    },
+    {
+      "id": 35,
+      "gridPos": { "h": 6, "w": 4, "x": 20, "y": 1 },
+      "type": "stat",
+      "title": "Active Commanders",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(posproctor_controller_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Active"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "green" }
+        }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 },
+      "id": 31,
+      "panels": [],
+      "title": "Performance Monitoring",
+      "type": "row"
+    },
+    {
+      "id": 10,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "type": "timeseries",
+      "title": "Scrape Success Rate Over Time",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "avg by (group) (posproctor_scrape_success{group=~'$group'})",
+          "legendFormat": "{{ group }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      }
+    },
+    {
+      "id": 11,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "type": "timeseries",
+      "title": "Failed Scrapes by Group",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (group) (posproctor_scrape_success{group=~'$group'} == 0)",
+          "legendFormat": "{{ group }} Failures"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      }
+    },
+    {
+      "id": 12,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 25 },
+      "type": "timeseries",
+      "title": "Average Scrape Cycle Time",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "posproctor_scrape_cycle_duration_seconds_sum / posproctor_scrape_cycle_duration_seconds_count",
+          "legendFormat": "Average scrape time"
+        },
+        {
+          "refId": "B", 
+          "expr": "rate(posproctor_scrape_cycle_duration_seconds_sum[5m]) / rate(posproctor_scrape_cycle_duration_seconds_count[5m])",
+          "legendFormat": "Average (rate)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "calcs": ["mean", "lastNotNull"], "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "id": 13,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 25 },
+      "type": "timeseries",
+      "title": "Individual Commander Query Times",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (endpoint) (posproctor_query_duration_seconds_sum{group=~'$group'}) / sum by (endpoint) (posproctor_query_duration_seconds_count{group=~'$group'})",
+          "legendFormat": "{{ endpoint }} (average)"
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (endpoint) (rate(posproctor_query_duration_seconds_sum{group=~'$group'}[5m])) / sum by (endpoint) (rate(posproctor_query_duration_seconds_count{group=~'$group'}[5m]))",
+          "legendFormat": "{{ endpoint }} (rate avg)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "calcs": ["mean", "lastNotNull"], "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 34 },
+      "id": 32,
+      "panels": [],
+      "title": "Commander Response Analysis",
+      "type": "row"
+    },
+    {
+      "id": 20,
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 35 },
+      "type": "table",
+      "title": "Commander Performance Stats",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "posproctor_scrape_success{group=~'$group'}",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "__name__": true,
+              "job": true,
+              "instance": true
+            },
+            "indexByName": {
+              "Time": 0,
+              "store": 1,
+              "group": 2,
+              "ip": 3,
+              "Value": 4
+            },
+            "renameByName": {
+              "store": "Store",
+              "group": "Group",
+              "ip": "IP Address", 
+              "Value": "Status"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Status",
+                "desc": false
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "align": "center",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Status" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "1": { "text": "✓ Success", "color": "green" }, "0": { "text": "✗ Failed", "color": "red" } } }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "IP Address" },
+            "properties": [
+              { "id": "links", "value": [
+                {
+                  "title": "Open Commander UI",
+                  "url": "https://${__data.fields[\"IP Address\"]}/ConfigClient.html",
+                  "targetBlank": true
+                }
+              ]}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 46 },
+      "id": 36,
+      "panels": [],
+      "title": "Error Analysis & Debugging",
+      "type": "row"
+    },
+    {
+      "id": 40,
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 47 },
+      "type": "stat",
+      "title": "Healthy Commanders",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(posproctor_commander_error_state_info{group=~'$group', brand=~'$brand', status=\"healthy\"})",
+          "legendFormat": "Healthy"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "green" },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 41,
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 47 },
+      "type": "stat",
+      "title": "Failed Commanders",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(posproctor_commander_error_state_info{group=~'$group', brand=~'$brand', status=\"error\"})",
+          "legendFormat": "Failed"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "red" },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 42,
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 47 },
+      "type": "stat",
+      "title": "Success Rate",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(posproctor_commander_error_state_info{group=~'$group', brand=~'$brand', status=\"healthy\"}) / count(posproctor_commander_error_state_info{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Success Rate"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 0.8 },
+              { "color": "green", "value": 0.9 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 43,
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 47 },
+      "type": "stat",
+      "title": "Critical Failures",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(posproctor_consecutive_failures{group=~'$group', brand=~'$brand'} > 3)",
+          "legendFormat": "Critical"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 3 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 37,
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 53 },
+      "type": "table",
+      "title": "Failed Commanders - Error Details",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "posproctor_commander_error_state_info{group=~'$group', brand=~'$brand', status=\"error\"}",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "__name__": true,
+              "job": true,
+              "instance": true,
+              "Time": true,
+              "Value": true
+            },
+            "indexByName": {
+              "store": 0,
+              "group": 1,
+              "brand": 2,
+              "ip": 3,
+              "status": 4,
+              "last_error_type": 5,
+              "last_error_message": 6,
+              "last_error_time": 7,
+              "last_success_time": 8
+            },
+            "renameByName": {
+              "store": "Store",
+              "group": "Group", 
+              "brand": "Brand",
+              "ip": "IP Address",
+              "status": "Status",
+              "last_error_type": "Error Type",
+              "last_error_message": "Error Message",
+              "last_error_time": "Last Error Time",
+              "last_success_time": "Last Success Time"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Status",
+                "desc": true
+              },
+              {
+                "field": "Last Error Time",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "align": "left",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Status" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "healthy": { "text": "✓ Healthy", "color": "green" }, "error": { "text": "✗ Error", "color": "red" } } }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Error Message" },
+            "properties": [
+              { "id": "custom.width", "value": 400 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "IP Address" },
+            "properties": [
+              { "id": "links", "value": [
+                {
+                  "title": "Open Commander UI",
+                  "url": "https://${__data.fields[\"IP Address\"]}/ConfigClient.html",
+                  "targetBlank": true
+                }
+              ]}
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": { "show": false, "reducer": ["sum"], "countRows": false, "fields": "" }
+      }
+    },
+    {
+      "id": 38,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 63 },
+      "type": "stat",
+      "title": "Error Breakdown by Type",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (error_type) (posproctor_query_failures_total{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "{{ error_type }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "hideFrom": { "legend": false, "tooltip": false, "vis": false }
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 39,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 63 },
+      "type": "timeseries",
+      "title": "Consecutive Failures by Commander",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "posproctor_consecutive_failures{group=~'$group', brand=~'$brand'}",
+          "legendFormat": "{{ store }} ({{ ip }})"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "showPoints": "always",
+            "pointSize": 5
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 3 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "calcs": [], "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 72 },
+      "id": 33,
+      "panels": [],
+      "title": "Storage & Database Metrics",
+      "type": "row"
+    },
+    {
+      "id": 25,
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 73 },
+      "type": "timeseries",
+      "title": "Filesystem Usage",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(node_filesystem_size_bytes{mountpoint=\"/\"} - node_filesystem_avail_bytes{mountpoint=\"/\"}) / 1024^3",
+          "legendFormat": "Root Filesystem Used (GB)"
+        },
+        {
+          "refId": "B",
+          "expr": "node_filesystem_avail_bytes{mountpoint=\"/\"} / 1024^3",
+          "legendFormat": "Root Filesystem Available (GB)"
+        },
+        {
+          "refId": "C",
+          "expr": "(1 - node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"}) * 100",
+          "legendFormat": "Root Filesystem Usage %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Root Filesystem Used (GB)" },
+            "properties": [{ "id": "unit", "value": "short" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Root Filesystem Available (GB)" },
+            "properties": [{ "id": "unit", "value": "short" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Root Filesystem Usage %" },
+            "properties": [{ "id": "unit", "value": "percent" }]
+          }
+        ]
+      }
+    },
+    {
+      "id": 26,
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 73 },
+      "type": "timeseries",
+      "title": "Storage & Data Metrics",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(node_filesystem_size_bytes{mountpoint=\"/\"} - node_filesystem_avail_bytes{mountpoint=\"/\"}) / 1024^3",
+          "legendFormat": "Current Disk Usage (GB)"
+        },
+        {
+          "refId": "B",
+          "expr": "rate(scrape_samples_scraped[5m])",
+          "legendFormat": "Data Ingestion Rate (samples/sec)"
+        },
+        {
+          "refId": "C",
+          "expr": "increase(scrape_samples_scraped[1h])",
+          "legendFormat": "Total Samples Collected (1h)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      }
+    },
+    {
+      "id": 27,
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 73 },
+      "type": "timeseries",
+      "title": "System Resource Usage",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+          "legendFormat": "Memory Usage %"
+        },
+        {
+          "refId": "B",
+          "expr": "rate(node_disk_written_bytes_total[5m]) / 1024^2",
+          "legendFormat": "Disk Write Rate (MB/s)"
+        },
+        {
+          "refId": "C",
+          "expr": "rate(node_disk_read_bytes_total[5m]) / 1024^2",
+          "legendFormat": "Disk Read Rate (MB/s)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Memory Usage %" },
+            "properties": [{ "id": "unit", "value": "percent" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Disk Write Rate (MB/s)" },
+            "properties": [{ "id": "unit", "value": "short" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Disk Read Rate (MB/s)" },
+            "properties": [{ "id": "unit", "value": "short" }]
+          }
+        ]
+      }
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": ["production", "monitoring", "stack-health", "performance"],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(posproctor_scrape_success, group)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "group",
+        "options": [],
+        "query": "label_values(posproctor_scrape_success, group)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(posproctor_scrape_success{group=~\"$group\"}, brand)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "brand",
+        "options": [],
+        "query": "label_values(posproctor_scrape_success{group=~\"$group\"}, brand)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "PosProctor Internal Health",
+  "uid": "4-posproctor-internal-health",
+  "version": 1
+}

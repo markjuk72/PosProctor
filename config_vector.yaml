@@ -1,0 +1,60 @@
+# Enrichment Tables
+enrichment_tables:
+  store_mapping:
+    type: file
+    file:
+      path: "/etc/vector/store_mapping.csv"
+      encoding:
+        type: csv
+    schema:
+      ip: string
+      store: string
+    index:
+      ip: exact
+
+# Sources
+sources:
+  syslog_udp:
+    type: syslog
+    address: 0.0.0.0:514
+    mode: udp
+    max_length: 102400
+
+# Transforms
+transforms:
+  relabel_nat_ip:
+    type: remap
+    inputs:
+      - syslog_udp
+    source: |
+      .nat_ip = .source_ip
+      del(.source_ip)
+      del(.timestamp)
+
+  enrich_pos_name:
+    type: remap
+    inputs:
+      - relabel_nat_ip
+    source: |
+      # Look up the store name from the enrichment table using nat_ip
+      .enriched_data, err = get_enrichment_table_record("store_mapping", {"ip": .nat_ip})
+      # Set pos_name to the store name if found, otherwise "unknown"
+      .pos_name = .enriched_data.store || "unknown"
+      .category = "security"
+
+# Sinks
+sinks:
+  loki:
+    type: loki
+    inputs:
+      - enrich_pos_name
+    endpoint: http://loki:3100
+    encoding:
+      codec: text
+    labels:
+      cluster: "docker-compose"
+      source: "syslog"
+      protocol: "udp"
+      nat_ip: "{{ nat_ip }}"
+      pos_name: "{{ pos_name }}"
+      category: "{{ category }}"

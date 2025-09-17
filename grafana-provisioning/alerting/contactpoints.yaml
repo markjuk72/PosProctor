@@ -1,0 +1,17 @@
+apiVersion: 1
+contactPoints:
+  - orgId: 1
+    name: email-alerts
+    receivers:
+      - uid: email-receiver
+        type: email
+        settings:
+          addresses: admin@example.com
+          subject: "🚨 Verifone Alert: {{ .GroupLabels.alertname }}"
+          message: |
+            {{ range .Alerts }}
+            **{{ .Annotations.summary }}**
+            
+            {{ .Annotations.description }}
+            {{ end }}
+        disableResolveMessage: false
