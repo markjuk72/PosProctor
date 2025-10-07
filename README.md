@@ -1,5 +1,3 @@
-![Image](./graphics/posproctor_logo_color_transparent.png)
-
 # POSProctor v2.3
 
 A comprehensive, production-ready monitoring solution for POS systems. This Docker-based stack provides real-time metrics, performance analytics, centralized logging, and intelligent alerting across multiple POS deployments.
