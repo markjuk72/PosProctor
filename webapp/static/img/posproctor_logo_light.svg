@@ -1,0 +1,37 @@
+<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Monitor/Screen with light colors for visibility on brown background -->
+
+  <!-- Monitor border (light gray/white) -->
+  <rect x="45" y="15" width="310" height="210" rx="10" fill="#F0F0F0"/>
+
+  <!-- Monitor screen (bright cyan) -->
+  <rect x="50" y="20" width="300" height="200" rx="8" fill="#00C8C8"/>
+
+  <!-- Stand (light gray) -->
+  <rect x="170" y="220" width="60" height="30" fill="#F0F0F0"/>
+
+  <!-- Base (light gray) -->
+  <rect x="140" y="250" width="120" height="10" rx="5" fill="#F0F0F0"/>
+
+  <!-- Rocket on screen (bright gold) -->
+  <!-- Rocket body -->
+  <polygon points="200,70 170,150 230,150" fill="#FFC800"/>
+  <rect x="170" y="150" width="60" height="30" fill="#FFC800"/>
+
+  <!-- Window (bright blue) -->
+  <circle cx="200" cy="110" r="15" fill="#6464FF"/>
+
+  <!-- Left fin -->
+  <polygon points="170,160 145,180 170,180" fill="#FFC800"/>
+
+  <!-- Right fin -->
+  <polygon points="230,160 255,180 230,180" fill="#FFC800"/>
+
+  <!-- Flame (orange/red gradient) -->
+  <polygon points="200,210 180,180 200,195 220,180" fill="#FF6400"/>
+  <polygon points="200,220 185,185 200,202 215,185" fill="#FF8800" opacity="0.8"/>
+
+  <!-- Text "PosProctor" in white -->
+  <text x="200" y="310" font-family="Arial, sans-serif" font-size="48" font-weight="bold"
+        fill="#FFFFFF" text-anchor="middle">PosProctor</text>
+</svg>

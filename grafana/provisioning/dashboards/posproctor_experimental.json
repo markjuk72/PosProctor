@@ -1,0 +1,1095 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "panels": [],
+      "title": "Scrape Cycle Status",
+      "type": "row"
+    },
+    {
+      "id": 101,
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 1 },
+      "type": "stat",
+      "title": "Scrape Status",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "posproctor_scrape_in_progress",
+          "legendFormat": "Status"
+        },
+        {
+          "refId": "B",
+          "expr": "time() - posproctor_last_scrape_timestamp",
+          "legendFormat": "Last Scrape"
+        },
+        {
+          "refId": "C",
+          "expr": "posproctor_next_scrape_timestamp - time()",
+          "legendFormat": "Next Scrape"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Status" },
+            "properties": [
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "0": { "text": "Idle", "color": "green" }, "1": { "text": "Scraping...", "color": "orange" } } }
+              ]},
+              { "id": "thresholds", "value": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "orange", "value": 1 }
+                ]
+              }}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Last Scrape" },
+            "properties": [
+              { "id": "unit", "value": "s" },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Next Scrape" },
+            "properties": [
+              { "id": "unit", "value": "s" },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "purple" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "horizontal",
+        "textMode": "value_and_name",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 102,
+      "gridPos": { "h": 4, "w": 8, "x": 8, "y": 1 },
+      "type": "stat",
+      "title": "Scrape Interval",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "posproctor_scrape_interval_seconds / 60",
+          "legendFormat": "Interval (min)"
+        },
+        {
+          "refId": "B",
+          "expr": "posproctor_total_commanders{enabled='true'}",
+          "legendFormat": "Commanders"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "horizontal",
+        "textMode": "value_and_name",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 103,
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 1 },
+      "type": "stat",
+      "title": "Config Reloads",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "posproctor_app_info",
+          "legendFormat": "Version {{version}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "text" }
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "horizontal",
+        "textMode": "name",
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 1,
+      "panels": [],
+      "title": "System Health Overview",
+      "type": "row"
+    },
+    {
+      "id": 2,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "type": "timeseries",
+      "title": "Controller Status by Group",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "avg by (group) (posproctor_controller_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "{{group}} Controller"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": { "mode": "none", "group": "A" },
+            "axisPlacement": "auto",
+            "axisLabel": "Health %",
+            "scaleDistribution": { "type": "linear" },
+            "hideFrom": { "legend": false, "tooltip": false, "vis": false },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 0.8 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "calcs": [], "displayMode": "table", "placement": "right", "showLegend": true }
+      }
+    },
+    {
+      "id": 3,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "type": "stat",
+      "title": "System Health Summary",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "avg(posproctor_controller_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Controller"
+        },
+        {
+          "refId": "B",
+          "expr": "avg(posproctor_pump_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Pump"
+        },
+        {
+          "refId": "C",
+          "expr": "avg(posproctor_dcr_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "DCR"
+        },
+        {
+          "refId": "D",
+          "expr": "avg(posproctor_primary_fep_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Primary FEP"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 0.8 },
+              { "color": "green", "value": 0.95 }
+            ]
+          },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 10 },
+      "id": 4,
+      "panels": [],
+      "title": "Log Correlation Analysis",
+      "type": "row"
+    },
+    {
+      "id": 5,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 11 },
+      "type": "logs",
+      "title": "Recent Security Events",
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{source=\"syslog\"} |= \"security\"",
+          "legendFormat": ""
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": false,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      }
+    },
+    {
+      "id": 6,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 11 },
+      "type": "timeseries",
+      "title": "Device Availability Over Time",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(posproctor_controller_status{group=~'$group', brand=~'$brand'}) / count(posproctor_controller_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Controllers"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(posproctor_pump_status{group=~'$group', brand=~'$brand'}) / count(posproctor_pump_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Pumps"
+        },
+        {
+          "refId": "C",
+          "expr": "sum(posproctor_dcr_status{group=~'$group', brand=~'$brand'}) / count(posproctor_dcr_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "DCRs"
+        },
+        {
+          "refId": "D",
+          "expr": "sum(posproctor_price_display_status{group=~'$group', brand=~'$brand'}) / count(posproctor_price_display_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Fuel Signs"
+        },
+        {
+          "refId": "E",
+          "expr": "sum(posproctor_loyalty_fep_status{group=~'$group', brand=~'$brand'}) / count(posproctor_loyalty_fep_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Loyalty"
+        },
+        {
+          "refId": "F",
+          "expr": "sum(posproctor_primary_fep_status{group=~'$group', brand=~'$brand'}) / count(posproctor_primary_fep_status{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Card Processor"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "auto",
+            "pointSize": 4,
+            "stacking": { "mode": "none", "group": "A" },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": { "type": "linear" },
+            "axisCenteredZero": false,
+            "hideFrom": { "legend": false, "tooltip": false, "vis": false },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 20 },
+      "id": 7,
+      "panels": [],
+      "title": "Component Analysis",
+      "type": "row"
+    },
+    {
+      "id": 8,
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 21 },
+      "type": "piechart",
+      "title": "Component Status Distribution",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(posproctor_controller_status{group=~'$group', brand=~'$brand'} == 0)",
+          "legendFormat": "Controller Failures"
+        },
+        {
+          "refId": "B",
+          "expr": "count(posproctor_pump_status{group=~'$group', brand=~'$brand'} == 0)",
+          "legendFormat": "Pump Failures"
+        },
+        {
+          "refId": "C",
+          "expr": "count(posproctor_dcr_status{group=~'$group', brand=~'$brand'} == 0)",
+          "legendFormat": "DCR Failures"
+        },
+        {
+          "refId": "D",
+          "expr": "count(posproctor_price_display_status{group=~'$group', brand=~'$brand'} == 0)",
+          "legendFormat": "Price Display Failures"
+        },
+        {
+          "refId": "E",
+          "expr": "count(posproctor_loyalty_fep_status{group=~'$group', brand=~'$brand'} == 0)",
+          "legendFormat": "Loyalty FEP Failures"
+        },
+        {
+          "refId": "F",
+          "expr": "count(posproctor_primary_fep_status{group=~'$group', brand=~'$brand'} == 0)",
+          "legendFormat": "Primary FEP Failures"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "hideFrom": { "legend": false, "tooltip": false, "vis": false }
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "pieType": "pie",
+        "tooltip": { "mode": "single", "sort": "none" },
+        "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "values": ["value", "percent"] },
+        "displayLabels": ["name", "value"]
+      }
+    },
+    {
+      "id": 9,
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 21 },
+      "type": "heatmap",
+      "title": "Security Event Activity Heatmap",
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (pos_name) (count_over_time({source=\"syslog\"} |= \"security\" [5m]))",
+          "legendFormat": "{{pos_name}}",
+          "hide": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          },
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "calculate": false,
+        "calculation": {},
+        "cellGap": 2,
+        "cellValues": {
+          "decimals": 0
+        },
+        "color": {
+          "exponent": 0.5,
+          "fill": "dark-orange",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Spectral",
+          "steps": 128
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-9
+        },
+        "legend": {
+          "show": true
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "showValue": "never",
+        "tooltip": {
+          "show": true,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "left",
+          "reverse": false,
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 21 },
+      "type": "timeseries",
+      "title": "Security Log Failures by Store",
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count_over_time({source=\"syslog\"} |= \"security\" |= \"FAILED\" [$__interval])",
+          "legendFormat": "{{pos_name}}",
+          "hide": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "spanNulls": false,
+            "showPoints": "auto",
+            "pointSize": 5,
+            "stacking": { "mode": "none", "group": "A" },
+            "axisPlacement": "auto",
+            "axisLabel": "Failed Events",
+            "scaleDistribution": { "type": "linear" },
+            "hideFrom": { "legend": false, "tooltip": false, "vis": false },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "unit": "short",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": {
+          "calcs": ["last", "max"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": ["last", "max"]
+        }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 30 },
+      "id": 11,
+      "panels": [],
+      "title": "Security Event Analysis",
+      "type": "row"
+    },
+    {
+      "id": 12,
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 31 },
+      "type": "table",
+      "title": "Recent FAILED Security Events",
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{source=\"syslog\"} |= \"FAILED\"",
+          "legendFormat": ""
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "tsNs": true,
+              "id": true,
+              "labels": false
+            },
+            "indexByName": {
+              "Time": 0,
+              "pos_name": 1,
+              "nat_ip": 2,
+              "Line": 3
+            },
+            "renameByName": {
+              "Time": "Timestamp",
+              "pos_name": "Store",
+              "nat_ip": "Source IP",
+              "Line": "Message"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Timestamp",
+            "desc": true
+          }
+        ],
+        "footer": {
+          "show": false,
+          "reducer": ["sum"],
+          "countRows": false,
+          "fields": ""
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "filterable": true,
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Store"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Source IP"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 140
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 13,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 41 },
+      "type": "piechart",
+      "title": "Security Events (PASSED vs FAILED)",
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({source=\"syslog\"} |= \"PASSED\" [$__range]))",
+          "legendFormat": "PASSED"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(count_over_time({source=\"syslog\"} |= \"FAILED\" [$__range]))",
+          "legendFormat": "FAILED"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": ["value", "percent"],
+          "calcs": ["lastNotNull"]
+        },
+        "pieType": "pie",
+        "displayLabels": ["percent"],
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 41 },
+      "type": "bargauge",
+      "title": "Security Events by Store",
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (pos_name) (count_over_time({source=\"syslog\"}[$__range]))",
+          "legendFormat": "{{pos_name}}"
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 5,
+                "color": "yellow"
+              },
+              {
+                "value": 10,
+                "color": "red"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 15,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 49 },
+      "type": "timeseries",
+      "title": "Failed Security Events Over Time",
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (pos_name) (count_over_time({source=\"syslog\"} |= \"FAILED\" [$__interval]))",
+          "legendFormat": "{{pos_name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "spanNulls": false,
+            "showPoints": "auto",
+            "pointSize": 5,
+            "stacking": { "mode": "none", "group": "A" },
+            "axisPlacement": "auto",
+            "axisLabel": "Failed Events",
+            "scaleDistribution": { "type": "linear" },
+            "hideFrom": { "legend": false, "tooltip": false, "vis": false },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": {
+          "calcs": ["last", "max", "sum"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        }
+      }
+    },
+    {
+      "id": 16,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 49 },
+      "type": "bargauge",
+      "title": "Failed Events by Store",
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (pos_name) (count_over_time({source=\"syslog\"} |= \"FAILED\" [$__range]))",
+          "legendFormat": "{{pos_name}}"
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 1,
+                "color": "yellow"
+              },
+              {
+                "value": 5,
+                "color": "orange"
+              },
+              {
+                "value": 10,
+                "color": "red"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 57 },
+      "id": 17,
+      "panels": [],
+      "title": "Downtime Analysis by Device Type (Based on Dashboard Time Range)",
+      "type": "row"
+    },
+    {
+      "id": 22,
+      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 58 },
+      "type": "stat",
+      "title": "Total Downtime Across All Devices (Over Selected Time Range)",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(sum_over_time((1 - posproctor_controller_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600 + sum(sum_over_time((1 - posproctor_pump_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600 + sum(sum_over_time((1 - posproctor_dcr_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600 + sum(sum_over_time((1 - posproctor_price_display_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600 + sum(sum_over_time((1 - posproctor_loyalty_fep_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600 + sum(sum_over_time((1 - posproctor_primary_fep_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600",
+          "legendFormat": "Total Hours Offline"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "orange", "value": 50 },
+              { "color": "red", "value": 100 }
+            ]
+          },
+          "unit": "h",
+          "decimals": 1,
+          "mappings": []
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "value_and_name",
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 21,
+      "gridPos": { "h": 3, "w": 24, "x": 0, "y": 62 },
+      "type": "text",
+      "title": "About These Metrics",
+      "options": {
+        "mode": "markdown",
+        "content": "**⏱️ Time Range**: All metrics are calculated based on the dashboard time range (top right). Change the time range to analyze different periods.\n\n**📊 Calculation**: Devices monitored every 30 seconds. Downtime = sum of all 30-second intervals where device status = 0, converted to hours.\n\n**🎯 Thresholds**: 🟢 < 1 hour  |  🟡 1-10 hours  |  🟠 10-50 hours  |  🔴 > 50 hours"
+      },
+      "transparent": true
+    },
+    {
+      "id": 18,
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 65 },
+      "type": "stat",
+      "title": "Downtime Hours by Device Type",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(sum_over_time((1 - posproctor_controller_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600",
+          "legendFormat": "Controllers"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(sum_over_time((1 - posproctor_pump_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600",
+          "legendFormat": "Pumps"
+        },
+        {
+          "refId": "C",
+          "expr": "sum(sum_over_time((1 - posproctor_dcr_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600",
+          "legendFormat": "DCRs"
+        },
+        {
+          "refId": "D",
+          "expr": "sum(sum_over_time((1 - posproctor_price_display_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600",
+          "legendFormat": "Fuel Signs"
+        },
+        {
+          "refId": "E",
+          "expr": "sum(sum_over_time((1 - posproctor_loyalty_fep_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600",
+          "legendFormat": "Loyalty FEP"
+        },
+        {
+          "refId": "F",
+          "expr": "sum(sum_over_time((1 - posproctor_primary_fep_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600",
+          "legendFormat": "Card Processor"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "unit": "h",
+          "decimals": 2,
+          "mappings": []
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "value_and_name",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 19,
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 65 },
+      "type": "bargauge",
+      "title": "Downtime Hours Comparison",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(sum_over_time((1 - posproctor_controller_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600",
+          "legendFormat": "Controllers"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(sum_over_time((1 - posproctor_pump_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600",
+          "legendFormat": "Pumps"
+        },
+        {
+          "refId": "C",
+          "expr": "sum(sum_over_time((1 - posproctor_dcr_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600",
+          "legendFormat": "DCRs"
+        },
+        {
+          "refId": "D",
+          "expr": "sum(sum_over_time((1 - posproctor_price_display_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600",
+          "legendFormat": "Fuel Signs"
+        },
+        {
+          "refId": "E",
+          "expr": "sum(sum_over_time((1 - posproctor_loyalty_fep_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600",
+          "legendFormat": "Loyalty FEP"
+        },
+        {
+          "refId": "F",
+          "expr": "sum(sum_over_time((1 - posproctor_primary_fep_status{group=~\"$group\", brand=~\"$brand\"})[$__range:30s])) * 30 / 3600",
+          "legendFormat": "Card Processor"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "unit": "h",
+          "decimals": 2
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "minVizWidth": 0,
+        "minVizHeight": 10
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": ["experimental", "correlation", "logs", "posproctor"],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus-posproctor2"
+        },
+        "definition": "label_values(posproctor_scrape_success, group)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "group",
+        "options": [],
+        "query": "label_values(posproctor_scrape_success, group)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus-posproctor2"
+        },
+        "definition": "label_values(posproctor_scrape_success{group=~\"$group\"}, brand)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "brand",
+        "options": [],
+        "query": "label_values(posproctor_scrape_success{group=~\"$group\"}, brand)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "PosProctor Experimental",
+  "uid": "posproctor-experimental",
+  "version": 2
+}

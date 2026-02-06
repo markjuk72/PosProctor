@@ -1,0 +1,126 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+env/
+ENV/
+
+# Data directories - contain runtime data
+data/database/*.db
+data/database/*.db-shm
+data/database/*.db-wal
+data/tlogs/*
+data/xml_debug/*
+data/prometheus/*
+data/loki/*
+data/grafana/*
+data/bitwarden/*
+data/nginx_logs/*
+data/tank_reports/*
+
+# Keep directory structure
+!data/database/.gitkeep
+!data/tlogs/.gitkeep
+!data/xml_debug/.gitkeep
+!data/prometheus/.gitkeep
+!data/loki/.gitkeep
+!data/grafana/.gitkeep
+!data/bitwarden/.gitkeep
+!data/nginx_logs/.gitkeep
+!data/tank_reports/.gitkeep
+
+# Sensitive files - credentials and secrets
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+credentials.json
+credentials.yaml
+secrets.yaml
+
+# Bitwarden session data
+.bw-session
+bw.db
+bw.db-*
+
+# SSL/TLS certificates
+config/ssl/*.pem
+config/ssl/*.key
+config/ssl/*.crt
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Backups
+*.bak
+*.backup
+*.db.backup
+*.tar.gz.backup
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+nul
+
+# Temporary files
+*.tmp
+*.temp
+*.orig
+*.rej
+*.patch
+.cache/
+tmp/
+
+# Claude Code artifacts (development)
+.claude/
+
+# Docker volumes (if using named volumes)
+volumes/
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Node modules (if any JavaScript tooling)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Documentation builds
+docs/_build/
+site/
+
+# Reference/Archive folders
+old_stack/
+grafanacommander/

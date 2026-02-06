@@ -1,0 +1,1298 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions - POSProctor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tabs-container {
+        border-bottom: 2px solid #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    .tab-buttons {
+        display: flex;
+        gap: 0;
+    }
+
+    .tab-btn {
+        padding: 12px 24px;
+        background: transparent;
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #6c757d;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+        color: var(--posproctor-teal);
+        background: #f8f9fa;
+    }
+
+    .tab-btn.active {
+        color: var(--posproctor-teal);
+        border-bottom-color: var(--posproctor-teal);
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .stat-card {
+        background: var(--posproctor-light-teal);
+        border: 1px solid var(--posproctor-teal);
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: var(--posproctor-teal);
+    }
+
+    .transaction-table {
+        width: 100%;
+        font-size: 13px;
+    }
+
+    .transaction-table th {
+        background: var(--posproctor-light-teal);
+        padding: 10px;
+        text-align: left;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .transaction-table td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .transaction-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    .table-container {
+        max-height: 600px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+    }
+
+    .filter-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 15px 0;
+    }
+
+    .loading-spinner {
+        text-align: center;
+        padding: 40px;
+    }
+
+    .loading-spinner i {
+        font-size: 3em;
+        color: var(--posproctor-teal);
+    }
+
+    .store-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .store-card {
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .store-card:hover {
+        border-color: var(--posproctor-teal);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transform: translateY(-1px);
+    }
+
+    .store-card .store-name {
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .store-card .store-status {
+        margin-bottom: 4px;
+    }
+
+    .store-card .report-badges {
+        font-size: 11px;
+        display: flex;
+        justify-content: center;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .store-card.status-online {
+        border-left: 4px solid #28a745;
+    }
+
+    .store-card.status-offline {
+        border-left: 4px solid #dc3545;
+    }
+
+    .store-card.status-unknown {
+        border-left: 4px solid #6c757d;
+    }
+
+    .group-section {
+        margin-bottom: 20px;
+    }
+
+    .group-header {
+        background: var(--posproctor-light-teal);
+        padding: 8px 12px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .group-header .group-stats {
+        font-weight: normal;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .report-day {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        text-align: center;
+        border-radius: 3px;
+        font-size: 10px;
+        font-weight: bold;
+    }
+
+    .report-day.both { background: #28a745; color: white; }
+    .report-day.day { background: #0d6efd; color: white; }
+    .report-day.shift { background: #ffc107; color: #000; }
+    .report-day.none { background: #e9ecef; color: #999; }
+
+    /* === DARK MODE === */
+    body.dark-mode .tabs-container {
+        border-color: var(--dm-card-border);
+    }
+
+    body.dark-mode .tab-btn {
+        color: var(--dm-text-muted);
+    }
+
+    body.dark-mode .tab-btn:hover {
+        color: var(--posproctor-teal);
+        background: var(--dm-surface);
+    }
+
+    body.dark-mode .tab-btn.active {
+        color: var(--posproctor-teal);
+    }
+
+    body.dark-mode .stat-card {
+        background: var(--dm-surface);
+        border-color: var(--dm-card-border);
+    }
+
+    body.dark-mode .stat-label {
+        color: var(--dm-text-muted);
+    }
+
+    body.dark-mode .stat-value {
+        color: var(--posproctor-teal);
+    }
+
+    body.dark-mode .store-card {
+        background: var(--dm-card);
+        border-color: var(--dm-card-border);
+        color: var(--dm-text);
+    }
+
+    body.dark-mode .store-card:hover {
+        border-color: var(--posproctor-teal);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    body.dark-mode .group-header {
+        background: linear-gradient(135deg, #4a3f35 0%, #3a322c 100%);
+        color: var(--dm-text);
+    }
+
+    body.dark-mode .group-header .group-stats {
+        color: var(--dm-text-muted);
+    }
+
+    body.dark-mode .table-container {
+        border-color: var(--dm-card-border);
+    }
+
+    body.dark-mode .transaction-table th {
+        background: var(--dm-surface);
+        color: var(--dm-text);
+    }
+
+    body.dark-mode .transaction-table td {
+        border-color: var(--dm-card-border);
+        color: var(--dm-text);
+    }
+
+    body.dark-mode .transaction-table tbody tr:hover {
+        background: var(--dm-surface);
+    }
+
+    body.dark-mode .report-day.none {
+        background: var(--dm-surface);
+        color: var(--dm-text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-file-invoice text-primary"></i> Transaction Logs
+        </h1>
+    </div>
+</div>
+
+<div class="tabs-container">
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('reports')">
+            <i class="fas fa-table"></i> Reports
+        </button>
+        <button class="tab-btn" onclick="switchTab('query')">
+            <i class="fas fa-search"></i> Query
+        </button>
+        <button class="tab-btn" onclick="switchTab('analysis')">
+            <i class="fas fa-chart-bar"></i> Analysis
+        </button>
+    </div>
+</div>
+
+<!-- Query Tab -->
+<div id="queryTab" class="tab-content">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-download"></i> Fetch Transaction Log by Date</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="queryCommanderSelect" class="form-label">Select Store</label>
+                    <select class="form-select" id="queryCommanderSelect">
+                        <option value="">-- Select a Store --</option>
+                        {% for cmd in commanders %}
+                        <option value="{{ cmd.ip }}" data-store="{{ cmd.store_name }}">
+                            {{ cmd.store_name }} ({{ cmd.ip }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="queryDate" class="form-label">Report Date</label>
+                    <input type="date" class="form-control" id="queryDate">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="button" class="btn btn-primary w-100" onclick="queryByDate()">
+                        <i class="fas fa-search"></i> Load Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="queryStatus" class="mt-3"></div>
+
+    <div id="queryResults" style="display: none;" class="mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-receipt"></i> Transaction Summary</h5>
+            </div>
+            <div class="card-body">
+                <div id="queryStats" class="stats-grid"></div>
+
+                <div id="queryFilters" class="filter-group" style="display: none;">
+                    <label class="form-label mb-0">Filter:</label>
+                    <select id="queryTransTypeFilter" class="form-select form-select-sm" style="width: auto;" onchange="applyQueryFilters()">
+                        <option value="">All Transaction Types</option>
+                    </select>
+                    <select id="queryPaymentFilter" class="form-select form-select-sm" style="width: auto;" onchange="applyQueryFilters()">
+                        <option value="">All Payment Methods</option>
+                    </select>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="clearQueryFilters()">Clear Filters</button>
+                    <button class="btn btn-sm btn-success ms-auto" onclick="downloadQueryCSV()">
+                        <i class="fas fa-download"></i> Download CSV
+                    </button>
+                </div>
+
+                <div id="queryTableContainer" class="table-container" style="display: none;">
+                    <table class="transaction-table">
+                        <thead id="queryTableHead"></thead>
+                        <tbody id="queryTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="queryLoading" class="loading-spinner" style="display: none;">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p class="mt-3">Loading transaction log...</p>
+    </div>
+</div>
+
+<!-- Reports Tab -->
+<div id="reportsTab" class="tab-content active">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-table"></i> Report Availability Matrix</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex align-items-center flex-wrap gap-3 mb-3">
+                <button type="button" class="btn btn-primary" onclick="refreshReportAvailability()">
+                    <i class="fas fa-sync"></i> <span id="refreshBtnText">Refresh Report Availability</span>
+                </button>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label mb-0 text-muted">Group by:</label>
+                    <div class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="groupBy" id="groupByState" value="state" checked onchange="updateGrouping()">
+                        <label class="btn btn-outline-secondary btn-sm" for="groupByState">State</label>
+                        <input type="radio" class="btn-check" name="groupBy" id="groupByBrand" value="brand" onchange="updateGrouping()">
+                        <label class="btn btn-outline-secondary btn-sm" for="groupByBrand">Brand</label>
+                        <input type="radio" class="btn-check" name="groupBy" id="groupByNone" value="none" onchange="updateGrouping()">
+                        <label class="btn btn-outline-secondary btn-sm" for="groupByNone">None</label>
+                    </div>
+                </div>
+                <span id="reportsLastUpdate" class="ms-auto text-muted"></span>
+            </div>
+
+            <div id="reportsStatus"></div>
+
+            <div id="reportsLoading" class="loading-spinner" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p class="mt-3">Checking report availability across all stores...</p>
+                <p class="small text-muted">This may take 30-60 seconds</p>
+            </div>
+
+            <div id="reportsMatrixContainer" style="display: none;" class="mt-3">
+                <div class="alert alert-info mb-3">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Legend:</strong>
+                    Last 7 days shown per store:
+                    <span class="report-day both">B</span> = Both reports
+                    <span class="report-day day">D</span> = Day only
+                    <span class="report-day shift">S</span> = Shift only
+                    <span class="report-day none">-</span> = None
+                    | Click a store to query reports
+                </div>
+                <div id="storeGridContainer"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analysis Tab -->
+<div id="analysisTab" class="tab-content">
+    <div id="analysisNoData" class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-chart-bar fa-4x text-muted mb-3"></i>
+            <h4>No Transaction Data</h4>
+            <p class="text-muted">Load a transaction report from the Query tab first, then return here to see the analysis.</p>
+            <button class="btn btn-primary" onclick="switchTab('query')">
+                <i class="fas fa-search"></i> Go to Query Tab
+            </button>
+        </div>
+    </div>
+
+    <div id="analysisCharts" style="display: none;">
+        <!-- Summary Stats -->
+        <div id="analysisSummary" class="stats-grid mb-4"></div>
+
+        <div class="row">
+            <!-- Payment Method Chart -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-credit-card"></i> Payment Methods</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="paymentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales Breakdown Chart (replaces Transaction Types) -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-gas-pump"></i> Sales Breakdown (Fuel vs Inside)</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="salesTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hourly Distribution -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-clock"></i> Hourly Distribution</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="hourlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Row: Loyalty Analysis and Revenue Split -->
+        <div class="row">
+            <!-- Loyalty Program Usage -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-id-card"></i> Loyalty Program Usage</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <canvas id="loyaltyChart"></canvas>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="loyaltyStats" class="small"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Selling Items -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-star"></i> Top Selling Items</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-success"><i class="fas fa-gas-pump"></i> Top Fuel Grades</h6>
+                                <div id="topFuelItems" class="small"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-info"><i class="fas fa-shopping-basket"></i> Top Inside Items</h6>
+                                <div id="topInsideItems" class="small"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+// Global variables
+let currentTab = 'reports';
+let queryTransactions = [];
+let topItemsData = null;
+let reportAvailabilityData = null;
+let analysisCharts = {};
+let currentStoreName = '';
+
+// Tab switching
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(tabName + 'Tab').classList.add('active');
+    event.target.closest('.tab-btn').classList.add('active');
+    currentTab = tabName;
+
+    // Load data for specific tabs
+    if (tabName === 'analysis' && queryTransactions.length > 0) {
+        updateAnalysisCharts();
+    }
+}
+
+// Helper functions
+function getPaymentMethod(transaction) {
+    if (transaction.payment_method) return transaction.payment_method;
+    if (transaction.tender_type) return transaction.tender_type;
+    return 'Unknown';
+}
+
+function getItemCount(transaction) {
+    if (transaction.item_count) return transaction.item_count;
+    if (transaction.items && Array.isArray(transaction.items)) return transaction.items.length;
+    return '0';
+}
+
+/**
+ * Determine if a transaction should be counted for revenue calculations.
+ *
+ * Excludes:
+ * - Rollback transactions (cancelled/reversed)
+ * - Prepay transactions (money collected but fuel not yet dispensed)
+ *
+ * Includes:
+ * - Normal sales
+ * - Network sales
+ * - Prepay completions (actual fuel dispensed after prepay)
+ *
+ * This prevents double-counting when a customer does a prepay:
+ * 1. PREPAY transaction - customer pays $20 (excluded from revenue)
+ * 2. COMPLETION transaction - fuel dispensed for $20 (included in revenue)
+ */
+function isRevenueTransaction(t) {
+    // Rollback transactions are cancelled - never count
+    if (t.rollback === 'true') return false;
+    // Prepay transactions are just deposits - don't count until completion
+    if (t.fuel_prepay === 'true') return false;
+    // All other sale types count (including prepay completions)
+    const transType = t.trans_type || '';
+    return ['sale', 'network sale', 'refund sale'].includes(transType);
+}
+
+/**
+ * Get a descriptive flag for the transaction type
+ */
+function getTransactionFlag(t) {
+    if (t.rollback === 'true') return 'ROLLBACK';
+    if (t.fuel_prepay === 'true') return 'PREPAY';
+    if (t.fuel_prepay_completion === 'true') return 'COMPLETION';
+    return '';
+}
+
+// ===========================================
+// QUERY TAB FUNCTIONS
+// ===========================================
+function queryByDate() {
+    const select = document.getElementById('queryCommanderSelect');
+    const ip = select.value;
+    const date = document.getElementById('queryDate').value;
+    currentStoreName = select.options[select.selectedIndex].dataset.store;
+
+    if (!ip) { alert('Please select a store'); return; }
+    if (!date) { alert('Please select a date'); return; }
+
+    const loadingDiv = document.getElementById('queryLoading');
+    const resultsDiv = document.getElementById('queryResults');
+    const statusDiv = document.getElementById('queryStatus');
+
+    loadingDiv.style.display = 'block';
+    resultsDiv.style.display = 'none';
+    statusDiv.innerHTML = '';
+
+    // Use the date endpoint to fetch report for specific date
+    fetch('/api/tlog/date', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ip: ip, date: date, period: 2})  // period 2 = day report
+    })
+    .then(response => response.json())
+    .then(data => {
+        loadingDiv.style.display = 'none';
+        if (data.success) {
+            queryTransactions = data.transactions || [];
+            topItemsData = data.top_items || null;
+            displayQueryResults(data, currentStoreName, date);
+        } else {
+            statusDiv.innerHTML = `<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> ${data.error || 'No reports found for this date'}</div>`;
+        }
+    })
+    .catch(error => {
+        loadingDiv.style.display = 'none';
+        statusDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle"></i> Error: ${error.message}</div>`;
+    });
+}
+
+function displayQueryResults(data, storeName, date) {
+    const resultsDiv = document.getElementById('queryResults');
+    const statsDiv = document.getElementById('queryStats');
+    const summary = data.summary || {};
+
+    resultsDiv.style.display = 'block';
+
+    statsDiv.innerHTML = `
+        <div class="stat-card">
+            <div class="stat-label">Report Date</div>
+            <div class="stat-value" style="font-size: 16px;">${date}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Transactions</div>
+            <div class="stat-value">${summary.total_transactions || 0}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Sales</div>
+            <div class="stat-value">${summary.sale_count || 0}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Fuel Transactions</div>
+            <div class="stat-value">${summary.fuel_count || 0}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value">$${(summary.total_revenue || 0).toFixed(2)}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Store</div>
+            <div class="stat-value" style="font-size: 16px;">${storeName}</div>
+        </div>
+    `;
+
+    // Show success message
+    document.getElementById('queryStatus').innerHTML = `
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            Report loaded successfully! ${data.report?.saved_as ? 'Saved as: <strong>' + data.report.saved_as + '</strong>' : ''}
+        </div>
+    `;
+
+    if (queryTransactions && queryTransactions.length > 0) {
+        document.getElementById('queryFilters').style.display = 'flex';
+        document.getElementById('queryTableContainer').style.display = 'block';
+        populateQueryTable(queryTransactions);
+        populateQueryFilters(queryTransactions);
+    }
+}
+
+function populateQueryTable(transactions) {
+    const thead = document.getElementById('queryTableHead');
+    const tbody = document.getElementById('queryTableBody');
+
+    if (!transactions || transactions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted">No transactions found</td></tr>';
+        return;
+    }
+
+    thead.innerHTML = `
+        <tr>
+            <th>Date/Time</th>
+            <th>Type</th>
+            <th>Flag</th>
+            <th>Ticket #</th>
+            <th>Cashier</th>
+            <th>Payment</th>
+            <th>Total (No Tax)</th>
+            <th>Tax</th>
+            <th>Total (W/Tax)</th>
+            <th>Items</th>
+        </tr>
+    `;
+
+    // Helper to get flag badge
+    const getFlagBadge = (t) => {
+        const flag = getTransactionFlag(t);
+        if (flag === 'ROLLBACK') return '<span class="badge bg-danger" title="Cancelled/Reversed">ROLLBACK</span>';
+        if (flag === 'PREPAY') return '<span class="badge bg-warning text-dark" title="Prepay deposit - not yet dispensed">PREPAY</span>';
+        if (flag === 'COMPLETION') return '<span class="badge bg-success" title="Prepay completion - fuel dispensed">COMPLETION</span>';
+        return '';
+    };
+
+    tbody.innerHTML = transactions.map(t => `
+        <tr class="${t.rollback === 'true' ? 'table-secondary text-muted' : ''}">
+            <td>${t.date || ''}</td>
+            <td><span class="badge bg-primary">${t.trans_type || ''}</span></td>
+            <td>${getFlagBadge(t)}</td>
+            <td>${t.ticket_seq || ''}</td>
+            <td>${t.cashier || ''}</td>
+            <td>${getPaymentMethod(t)}</td>
+            <td>$${parseFloat(t.total_no_tax || 0).toFixed(2)}</td>
+            <td>$${parseFloat(t.total_tax || 0).toFixed(2)}</td>
+            <td>$${parseFloat(t.total_with_tax || 0).toFixed(2)}</td>
+            <td>${getItemCount(t)}</td>
+        </tr>
+    `).join('');
+}
+
+function populateQueryFilters(transactions) {
+    const transTypes = [...new Set(transactions.map(t => t.trans_type).filter(Boolean))];
+    document.getElementById('queryTransTypeFilter').innerHTML = '<option value="">All Transaction Types</option>' +
+        transTypes.map(type => `<option value="${type}">${type}</option>`).join('');
+
+    const payments = [...new Set(transactions.map(t => getPaymentMethod(t)).filter(Boolean))];
+    document.getElementById('queryPaymentFilter').innerHTML = '<option value="">All Payment Methods</option>' +
+        payments.map(pm => `<option value="${pm}">${pm}</option>`).join('');
+}
+
+function applyQueryFilters() {
+    const transType = document.getElementById('queryTransTypeFilter').value;
+    const payment = document.getElementById('queryPaymentFilter').value;
+    let filtered = queryTransactions;
+    if (transType) filtered = filtered.filter(t => t.trans_type === transType);
+    if (payment) filtered = filtered.filter(t => getPaymentMethod(t) === payment);
+    populateQueryTable(filtered);
+}
+
+function clearQueryFilters() {
+    document.getElementById('queryTransTypeFilter').value = '';
+    document.getElementById('queryPaymentFilter').value = '';
+    populateQueryTable(queryTransactions);
+}
+
+function downloadQueryCSV() {
+    // CSV export includes ALL raw transaction data (excluding journal entries which are already filtered)
+    // This gives the user the complete raw data including prepays, rollbacks, and completions
+    // The Flag column helps identify transaction types for manual analysis
+    if (!queryTransactions || queryTransactions.length === 0) {
+        alert('No transactions to download');
+        return;
+    }
+
+    // Helper to escape CSV values containing commas or quotes
+    const escapeCSV = (val) => {
+        if (val === null || val === undefined) return '';
+        const str = String(val);
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+            return '"' + str.replace(/"/g, '""') + '"';
+        }
+        return str;
+    };
+
+    const headers = [
+        'Date/Time', 'Type', 'Flag', 'Ticket #', 'Unique SN', 'Unique ID',
+        'Cashier', 'Register', 'Payment', 'Total (No Tax)', 'Tax', 'Total (W/Tax)',
+        'Items', 'First Item', 'Fuel Pump', 'Fuel Grade', 'Fuel Volume', 'Fuel Total'
+    ];
+
+    const rows = queryTransactions.map(t => [
+        escapeCSV(t.date || ''),
+        escapeCSV(t.trans_type || ''),
+        escapeCSV(getTransactionFlag(t)),  // PREPAY, ROLLBACK, COMPLETION, or empty
+        escapeCSV(t.ticket_seq || ''),
+        escapeCSV(t.unique_sn || ''),
+        escapeCSV(t.unique_id || ''),
+        escapeCSV(t.cashier || ''),
+        escapeCSV(t.register_id || t.pos_number || ''),
+        escapeCSV(getPaymentMethod(t)),
+        parseFloat(t.total_no_tax || 0).toFixed(2),
+        parseFloat(t.total_tax || 0).toFixed(2),
+        parseFloat(t.total_with_tax || 0).toFixed(2),
+        getItemCount(t),
+        escapeCSV(t.first_item_desc || ''),
+        escapeCSV(t.fuel_pump || ''),
+        escapeCSV(t.fuel_grade || ''),
+        escapeCSV(t.fuel_volume || ''),
+        escapeCSV(t.fuel_total || '')
+    ]);
+
+    const csv = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transactions_${currentStoreName.replace(/\s+/g, '_')}_${document.getElementById('queryDate').value}.csv`;
+    a.click();
+}
+
+// ===========================================
+// REPORTS TAB FUNCTIONS
+// ===========================================
+function refreshReportAvailability() {
+    const loadingDiv = document.getElementById('reportsLoading');
+    const statusDiv = document.getElementById('reportsStatus');
+    const containerDiv = document.getElementById('reportsMatrixContainer');
+    const btn = document.getElementById('refreshBtnText');
+
+    loadingDiv.style.display = 'block';
+    containerDiv.style.display = 'none';
+    statusDiv.innerHTML = '';
+    btn.textContent = 'Checking...';
+
+    fetch('/api/tlog/availability')
+    .then(response => response.json())
+    .then(data => {
+        loadingDiv.style.display = 'none';
+        btn.textContent = 'Refresh Report Availability';
+
+        if (data.success) {
+            reportAvailabilityData = data;
+            displayReportMatrix(data);
+            containerDiv.style.display = 'block';
+            document.getElementById('reportsLastUpdate').textContent =
+                'Last updated: ' + new Date().toLocaleString();
+        } else {
+            statusDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> ${data.error}</div>`;
+        }
+    })
+    .catch(error => {
+        loadingDiv.style.display = 'none';
+        btn.textContent = 'Refresh Report Availability';
+        statusDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle"></i> Error: ${error.message}</div>`;
+    });
+}
+
+// Extract state from store name (e.g., "Store 123 - Dallas, TX" -> "TX")
+function extractState(storeName) {
+    // Look for common US state abbreviations at the end or after comma
+    const stateMatch = storeName.match(/,\s*([A-Z]{2})(?:\s|$)/i) ||
+                       storeName.match(/\b([A-Z]{2})$/i);
+    if (stateMatch) {
+        return stateMatch[1].toUpperCase();
+    }
+    // Try to find state in parentheses
+    const parenMatch = storeName.match(/\(([A-Z]{2})\)/i);
+    if (parenMatch) {
+        return parenMatch[1].toUpperCase();
+    }
+    return 'Unknown';
+}
+
+// Define the desired state order for grouping
+const STATE_ORDER = ['ID', 'WY', 'NM', 'UT', 'AZ', 'CO', 'MT'];
+const STATE_NAMES = {
+    'ID': 'Idaho', 'WY': 'Wyoming', 'NM': 'New Mexico',
+    'UT': 'Utah', 'AZ': 'Arizona', 'CO': 'Colorado', 'MT': 'Montana'
+};
+
+function getStateOrderIndex(stateCode) {
+    const idx = STATE_ORDER.indexOf(stateCode.toUpperCase());
+    return idx >= 0 ? idx : STATE_ORDER.length;
+}
+
+// Extract store number from store name
+function extractStoreNumber(storeName) {
+    const match = (storeName || '').match(/(\d+)/);
+    return match ? parseInt(match[1]) : Infinity;
+}
+
+// Get the minimum store number in a group (for sorting states by store number range)
+function getGroupMinStoreNumber(stores) {
+    if (!stores || stores.length === 0) return Infinity;
+    return Math.min(...stores.map(s => extractStoreNumber(s.store_name)));
+}
+
+// Get current grouping selection
+function getGrouping() {
+    const selected = document.querySelector('input[name="groupBy"]:checked');
+    return selected ? selected.value : 'state';
+}
+
+// Update grouping when user changes selection
+function updateGrouping() {
+    if (reportAvailabilityData) {
+        displayReportMatrix(reportAvailabilityData);
+    }
+}
+
+function displayReportMatrix(data) {
+    const gridContainer = document.getElementById('storeGridContainer');
+    const groupBy = getGrouping();
+
+    // Get last 7 days for display
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        dates.push(d.toISOString().split('T')[0]);
+    }
+
+    // Group stores based on selection
+    const storesByGroup = {};
+    (data.stores || []).forEach(store => {
+        let groupKey;
+        switch (groupBy) {
+            case 'state':
+                groupKey = extractState(store.store_name);
+                break;
+            case 'brand':
+                groupKey = store.brand || 'Other';
+                break;
+            case 'none':
+            default:
+                groupKey = null;
+                break;
+        }
+
+        if (groupKey === null) {
+            if (!storesByGroup['_all']) storesByGroup['_all'] = [];
+            storesByGroup['_all'].push(store);
+        } else {
+            if (!storesByGroup[groupKey]) storesByGroup[groupKey] = [];
+            storesByGroup[groupKey].push(store);
+        }
+    });
+
+    // Sort groups using predefined state order when grouping by state
+    const sortedGroups = Object.keys(storesByGroup).sort((a, b) => {
+        if (a === '_all') return 0;
+        if (groupBy === 'state') {
+            // Use predefined state order: ID, WY, NM, UT, AZ, CO, MT
+            return getStateOrderIndex(a) - getStateOrderIndex(b);
+        }
+        // For other groupings (brand, etc.), sort alphabetically
+        return a.localeCompare(b);
+    });
+
+    // Build grid HTML
+    let html = '';
+    for (const group of sortedGroups) {
+        const stores = storesByGroup[group];
+
+        // Sort stores within group by store number
+        stores.sort((a, b) => extractStoreNumber(a.store_name) - extractStoreNumber(b.store_name));
+
+        // Count online stores
+        const onlineCount = stores.filter(s => s.status === 'online').length;
+
+        if (group !== '_all' && groupBy !== 'none') {
+            // Use full state name for state grouping, otherwise use group key
+            const displayName = (groupBy === 'state' && STATE_NAMES[group]) ? STATE_NAMES[group] : group;
+            html += `<div class="group-section">
+                <div class="group-header">
+                    <span>${displayName}</span>
+                    <span class="group-stats">${stores.length} stores, ${onlineCount} online</span>
+                </div>
+                <div class="store-grid">`;
+        } else {
+            html += '<div class="store-grid">';
+        }
+
+        stores.forEach(store => {
+            const statusClass = store.status === 'online' ? 'online' :
+                               store.status === 'offline' ? 'offline' : 'unknown';
+
+            // Build report day badges (last 7 days)
+            let reportBadges = '';
+            dates.forEach((d, i) => {
+                const reports = store.reports?.[d] || {};
+                const hasShift = reports.shift;
+                const hasDay = reports.day;
+
+                let badgeClass, label, title;
+                if (hasShift && hasDay) {
+                    badgeClass = 'both';
+                    label = 'B';
+                    title = d + ': Both';
+                } else if (hasDay) {
+                    badgeClass = 'day';
+                    label = 'D';
+                    title = d + ': Day only';
+                } else if (hasShift) {
+                    badgeClass = 'shift';
+                    label = 'S';
+                    title = d + ': Shift only';
+                } else {
+                    badgeClass = 'none';
+                    label = '-';
+                    title = d + ': No reports';
+                }
+                reportBadges += `<span class="report-day ${badgeClass}" title="${title}">${label}</span>`;
+            });
+
+            html += `<div class="store-card status-${statusClass}" onclick="loadStoreQuery('${store.ip}', '${store.store_name.replace(/'/g, "\\'")}')">
+                <div class="store-name" title="${store.store_name}">${store.store_name}</div>
+                <div class="store-status">
+                    <span class="badge ${store.status === 'online' ? 'bg-success' : 'bg-danger'}">${store.status === 'online' ? 'Online' : 'Offline'}</span>
+                </div>
+                <div class="report-badges">${reportBadges}</div>
+            </div>`;
+        });
+
+        html += '</div>';
+        if (group !== '_all' && groupBy !== 'none') {
+            html += '</div>';
+        }
+    }
+
+    gridContainer.innerHTML = html || '<p class="text-center text-muted">No stores configured</p>';
+}
+
+// Load store into query tab when clicked from grid
+function loadStoreQuery(ip, storeName) {
+    document.getElementById('queryCommanderSelect').value = ip;
+    currentStoreName = storeName;
+    switchTab('query');
+}
+
+// ===========================================
+// ANALYSIS TAB FUNCTIONS
+// ===========================================
+function updateAnalysisCharts() {
+    if (!queryTransactions || queryTransactions.length === 0) {
+        document.getElementById('analysisNoData').style.display = 'block';
+        document.getElementById('analysisCharts').style.display = 'none';
+        return;
+    }
+
+    document.getElementById('analysisNoData').style.display = 'none';
+    document.getElementById('analysisCharts').style.display = 'block';
+
+    // Filter to only revenue transactions for analysis
+    const revenueTransactions = queryTransactions.filter(isRevenueTransaction);
+
+    // Count excluded transactions for info
+    const rollbackCount = queryTransactions.filter(t => t.rollback === 'true').length;
+    const prepayCount = queryTransactions.filter(t => t.fuel_prepay === 'true').length;
+    const completionCount = queryTransactions.filter(t => t.fuel_prepay_completion === 'true').length;
+
+    // Payment method breakdown (revenue transactions only)
+    const paymentCounts = {};
+    revenueTransactions.forEach(t => {
+        const method = getPaymentMethod(t);
+        paymentCounts[method] = (paymentCounts[method] || 0) + 1;
+    });
+
+    // Destroy existing charts if they exist
+    if (analysisCharts.payment) analysisCharts.payment.destroy();
+    if (analysisCharts.hourly) analysisCharts.hourly.destroy();
+    if (analysisCharts.salesType) analysisCharts.salesType.destroy();
+    if (analysisCharts.loyalty) analysisCharts.loyalty.destroy();
+
+    // Payment Method Chart
+    const paymentCtx = document.getElementById('paymentChart').getContext('2d');
+    analysisCharts.payment = new Chart(paymentCtx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(paymentCounts),
+            datasets: [{
+                data: Object.values(paymentCounts),
+                backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#00BCD4', '#F44336']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    // Sales Type Breakdown (Fuel vs Inside)
+    const saleTypeCounts = { 'Fuel Only': 0, 'Inside Only': 0, 'Mixed (Fuel + Inside)': 0 };
+    revenueTransactions.forEach(t => {
+        const saleType = t.sale_type || 'unknown';
+        if (saleType === 'fuel_only') saleTypeCounts['Fuel Only']++;
+        else if (saleType === 'inside_only') saleTypeCounts['Inside Only']++;
+        else if (saleType === 'mixed') saleTypeCounts['Mixed (Fuel + Inside)']++;
+    });
+
+    const salesTypeCtx = document.getElementById('salesTypeChart').getContext('2d');
+    analysisCharts.salesType = new Chart(salesTypeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(saleTypeCounts),
+            datasets: [{
+                data: Object.values(saleTypeCounts),
+                backgroundColor: ['#28a745', '#17a2b8', '#fd7e14']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    // Hourly distribution (revenue transactions only)
+    const hourlyCounts = {};
+    revenueTransactions.forEach(t => {
+        if (t.date) {
+            const timePart = t.date.includes('T') ? t.date.split('T')[1] : t.date.split(' ')[1];
+            const hour = timePart?.split(':')[0] || '00';
+            hourlyCounts[hour] = (hourlyCounts[hour] || 0) + 1;
+        }
+    });
+
+    const hours = Object.keys(hourlyCounts).sort();
+    const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+    analysisCharts.hourly = new Chart(hourlyCtx, {
+        type: 'bar',
+        data: {
+            labels: hours.map(h => h + ':00'),
+            datasets: [{
+                label: 'Transactions',
+                data: hours.map(h => hourlyCounts[h]),
+                backgroundColor: '#17a2b8'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // Loyalty Program Analysis
+    const loyaltyCounts = {};
+    let loyaltyTransCount = 0;
+    revenueTransactions.forEach(t => {
+        const program = t.loyalty_program || '';
+        if (program) {
+            loyaltyCounts[program] = (loyaltyCounts[program] || 0) + 1;
+            loyaltyTransCount++;
+        }
+    });
+
+    const noLoyaltyCount = revenueTransactions.length - loyaltyTransCount;
+    const loyaltyLabels = ['No Loyalty', ...Object.keys(loyaltyCounts)];
+    const loyaltyData = [noLoyaltyCount, ...Object.values(loyaltyCounts)];
+
+    const loyaltyCtx = document.getElementById('loyaltyChart').getContext('2d');
+    analysisCharts.loyalty = new Chart(loyaltyCtx, {
+        type: 'doughnut',
+        data: {
+            labels: loyaltyLabels,
+            datasets: [{
+                data: loyaltyData,
+                backgroundColor: ['#6c757d', '#28a745', '#17a2b8', '#fd7e14', '#e83e8c', '#6610f2']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // Loyalty stats text
+    const loyaltyPct = revenueTransactions.length > 0 ? ((loyaltyTransCount / revenueTransactions.length) * 100).toFixed(1) : 0;
+    let loyaltyStatsHtml = `
+        <p class="mb-2"><strong>Loyalty Usage:</strong> ${loyaltyPct}% of transactions</p>
+        <p class="mb-1"><strong>${loyaltyTransCount}</strong> transactions with loyalty</p>
+        <p class="mb-3"><strong>${noLoyaltyCount}</strong> without loyalty</p>
+        <hr>
+        <p class="mb-1"><strong>Programs:</strong></p>
+    `;
+    if (Object.keys(loyaltyCounts).length === 0) {
+        loyaltyStatsHtml += '<p class="text-muted">No loyalty programs used</p>';
+    } else {
+        Object.entries(loyaltyCounts).sort((a, b) => b[1] - a[1]).forEach(([prog, count]) => {
+            const progPct = ((count / revenueTransactions.length) * 100).toFixed(1);
+            const displayName = prog === 'Loyalty Program' ? '<span class="badge bg-success">Loyalty</span>' :
+                               prog === 'ShellLoyalty' ? '<span class="badge bg-warning text-dark">Shell</span>' :
+                               `<span class="badge bg-secondary">${prog}</span>`;
+            loyaltyStatsHtml += `<p class="mb-1">${displayName} ${count} (${progPct}%)</p>`;
+        });
+    }
+    document.getElementById('loyaltyStats').innerHTML = loyaltyStatsHtml;
+
+    // Top Selling Items (from API)
+    let topFuelHtml = '';
+    let topInsideHtml = '';
+
+    if (topItemsData && topItemsData.fuel_items && topItemsData.fuel_items.length > 0) {
+        topFuelHtml = '<table class="table table-sm table-borderless mb-0"><tbody>';
+        topItemsData.fuel_items.slice(0, 5).forEach((item, i) => {
+            topFuelHtml += `<tr>
+                <td class="ps-0"><span class="badge bg-secondary">${i + 1}</span></td>
+                <td>${item.name}</td>
+                <td class="text-end text-muted">${item.count} sales</td>
+            </tr>`;
+        });
+        topFuelHtml += '</tbody></table>';
+    } else {
+        topFuelHtml = '<p class="text-muted mb-0">No fuel sales data</p>';
+    }
+
+    if (topItemsData && topItemsData.inside_items && topItemsData.inside_items.length > 0) {
+        topInsideHtml = '<table class="table table-sm table-borderless mb-0"><tbody>';
+        topItemsData.inside_items.slice(0, 5).forEach((item, i) => {
+            // Truncate long item names
+            const displayName = item.name.length > 25 ? item.name.substring(0, 22) + '...' : item.name;
+            topInsideHtml += `<tr>
+                <td class="ps-0"><span class="badge bg-secondary">${i + 1}</span></td>
+                <td title="${item.name}">${displayName}</td>
+                <td class="text-end text-muted">${item.count}</td>
+            </tr>`;
+        });
+        topInsideHtml += '</tbody></table>';
+    } else {
+        topInsideHtml = '<p class="text-muted mb-0">No inside sales data</p>';
+    }
+
+    document.getElementById('topFuelItems').innerHTML = topFuelHtml;
+    document.getElementById('topInsideItems').innerHTML = topInsideHtml;
+
+    // Calculate revenue totals for summary cards
+    let totalFuelSales = 0;
+    let totalInsideSales = 0;
+    revenueTransactions.forEach(t => {
+        totalFuelSales += parseFloat(t.fuel_sales_total || 0);
+        totalInsideSales += parseFloat(t.inside_sales_total || 0);
+    });
+    const totalRevenue = totalFuelSales + totalInsideSales;
+
+    // Update summary stats (top cards)
+    const avgTransaction = revenueTransactions.length > 0 ? totalRevenue / revenueTransactions.length : 0;
+
+    let excludedInfo = '';
+    if (prepayCount > 0 || rollbackCount > 0) {
+        const excluded = [];
+        if (prepayCount > 0) excluded.push(`${prepayCount} prepays`);
+        if (rollbackCount > 0) excluded.push(`${rollbackCount} rollbacks`);
+        excludedInfo = `<small class="text-muted d-block mt-1">Excludes ${excluded.join(', ')} from totals</small>`;
+    }
+
+    document.getElementById('analysisSummary').innerHTML = `
+        <div class="stat-card">
+            <div class="stat-label">Revenue Transactions</div>
+            <div class="stat-value">${revenueTransactions.length}</div>
+            <small class="text-muted">${queryTransactions.length} total rows</small>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value">$${totalRevenue.toFixed(2)}</div>
+            ${excludedInfo}
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Avg Transaction</div>
+            <div class="stat-value">$${avgTransaction.toFixed(2)}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Loyalty Usage</div>
+            <div class="stat-value">${loyaltyPct}%</div>
+            <small class="text-muted">${loyaltyTransCount} of ${revenueTransactions.length}</small>
+        </div>
+    `;
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('queryDate').valueAsDate = new Date();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,328 @@
+groups:
+- name: posproctor_alerts
+  folder: POSProctor
+  interval: 1m
+  rules:
+  - uid: controller-offline
+    title: Controller Offline
+    condition: B
+    data:
+    - refId: A
+      queryType: ''
+      relativeTimeRange:
+        from: 300
+        to: 0
+      datasourceUid: PBFA97CFB590B2093
+      model:
+        expr: posproctor_controller_status == 0
+        instant: true
+        intervalMs: 1000
+        maxDataPoints: 43200
+        refId: A
+    - refId: B
+      queryType: ''
+      relativeTimeRange:
+        from: 0
+        to: 0
+      datasourceUid: __expr__
+      model:
+        conditions:
+        - evaluator:
+            params:
+            - 0
+            type: gt
+          operator:
+            type: and
+          query:
+            params:
+            - B
+          type: query
+        datasource:
+          type: __expr__
+          uid: __expr__
+        expression: A
+        reducer: count
+        type: reduce
+    intervalSeconds: 60
+    maxNoDataTimeoutSeconds: 300
+    noDataState: OK
+    execErrState: Alerting
+    for: 20m
+    annotations:
+      summary: "\U0001F6A8 {{ $labels.store }} ({{ $labels.group }}) - Controller\
+        \ Offline"
+      description: "**FORECOURT CONTROLLER OFFLINE**\n\n\U0001F4CD **Location:** {{\
+        \ $labels.store }}, {{ $labels.group }}\n\U0001F39B\uFE0F **Device:** Forecourt\
+        \ Controller (Main System)\n\U0001F310 **Commander:** {{ $labels.ip }}\n\u26A0\
+        \uFE0F **Impact:** All pumps and devices may be affected\n\n**Priority:**\
+        \ HIGH - Controller controls all forecourt devices\n"
+    labels:
+      severity: critical
+  - uid: pump-offline
+    title: Pump Offline
+    condition: B
+    data:
+    - refId: A
+      queryType: ''
+      relativeTimeRange:
+        from: 300
+        to: 0
+      datasourceUid: PBFA97CFB590B2093
+      model:
+        expr: posproctor_pump_status == 0
+        intervalMs: 1000
+        maxDataPoints: 43200
+        refId: A
+    - refId: B
+      queryType: ''
+      relativeTimeRange:
+        from: 0
+        to: 0
+      datasourceUid: __expr__
+      model:
+        conditions:
+        - evaluator:
+            params:
+            - 0
+            type: gt
+          operator:
+            type: and
+          query:
+            params:
+            - B
+          type: query
+        datasource:
+          type: __expr__
+          uid: __expr__
+        expression: A
+        reducer: count
+        type: reduce
+    intervalSeconds: 60
+    maxNoDataTimeoutSeconds: 300
+    noDataState: OK
+    execErrState: Alerting
+    for: 15m
+    annotations:
+      summary: "\U0001F6A8 {{ $labels.store }} ({{ $labels.group }}) - Pump {{ $labels.fueling_point_id\
+        \ }} Offline"
+      description: "**FUEL PUMP OFFLINE**\n\n\U0001F4CD **Location:** {{ $labels.store\
+        \ }}, {{ $labels.group }}\n\u26FD **Device:** Fuel Pump {{ $labels.fueling_point_id\
+        \ }}\n\U0001F310 **Commander:** {{ $labels.ip }}\n\U0001F4B0 **Impact:** Customers\
+        \ cannot fuel at this position\n\n**Priority:** MEDIUM - Single pump affected,\
+        \ others functional\n"
+    labels:
+      severity: warning
+  - uid: dcr-offline
+    title: DCR Offline
+    condition: B
+    data:
+    - refId: A
+      queryType: ''
+      relativeTimeRange:
+        from: 300
+        to: 0
+      datasourceUid: PBFA97CFB590B2093
+      model:
+        expr: posproctor_dcr_status == 0
+        intervalMs: 1000
+        maxDataPoints: 43200
+        refId: A
+    - refId: B
+      queryType: ''
+      relativeTimeRange:
+        from: 0
+        to: 0
+      datasourceUid: __expr__
+      model:
+        conditions:
+        - evaluator:
+            params:
+            - 0
+            type: gt
+          operator:
+            type: and
+          query:
+            params:
+            - B
+          type: query
+        datasource:
+          type: __expr__
+          uid: __expr__
+        expression: A
+        reducer: count
+        type: reduce
+    intervalSeconds: 60
+    maxNoDataTimeoutSeconds: 300
+    noDataState: OK
+    execErrState: Alerting
+    for: 15m
+    annotations:
+      summary: "\U0001F6A8 {{ $labels.store }} ({{ $labels.group }}) - DCR {{ $labels.fueling_point_id\
+        \ }} Offline"
+      description: "**CARD READER OFFLINE**\n\n\U0001F4CD **Location:** {{ $labels.store\
+        \ }}, {{ $labels.group }}\n\U0001F4B3 **Device:** Dispenser Card Reader (DCR)\
+        \ {{ $labels.fueling_point_id }}\n\U0001F310 **Commander:** {{ $labels.ip\
+        \ }}\n\U0001F4B0 **Impact:** Customers cannot pay at pump, must pay inside\n\
+        \n**Priority:** MEDIUM - Payment processing affected at this pump\n"
+    labels:
+      severity: warning
+  - uid: fuel-sign-offline
+    title: Fuel Sign Offline
+    condition: B
+    data:
+    - refId: A
+      queryType: ''
+      relativeTimeRange:
+        from: 300
+        to: 0
+      datasourceUid: PBFA97CFB590B2093
+      model:
+        expr: posproctor_price_display_status == 0
+        intervalMs: 1000
+        maxDataPoints: 43200
+        refId: A
+    - refId: B
+      queryType: ''
+      relativeTimeRange:
+        from: 0
+        to: 0
+      datasourceUid: __expr__
+      model:
+        conditions:
+        - evaluator:
+            params:
+            - 0
+            type: gt
+          operator:
+            type: and
+          query:
+            params:
+            - B
+          type: query
+        datasource:
+          type: __expr__
+          uid: __expr__
+        expression: A
+        reducer: count
+        type: reduce
+    intervalSeconds: 60
+    maxNoDataTimeoutSeconds: 300
+    noDataState: OK
+    execErrState: Alerting
+    for: 10m
+    annotations:
+      summary: "\U0001F6A8 {{ $labels.store }} ({{ $labels.group }}) - Fuel Sign Offline"
+      description: "**FUEL PRICE DISPLAY OFFLINE**\n\n\U0001F4CD **Location:** {{\
+        \ $labels.store }}, {{ $labels.group }}\n\U0001F5A5\uFE0F **Device:** Fuel\
+        \ Price Display ({{ $labels.display_id }})\n\U0001F310 **Commander:** {{ $labels.ip\
+        \ }}\n\n**Priority:** MEDIUM - Price display unavailable to customers\n"
+    labels:
+      severity: warning
+  - uid: loyalty-fep-offline
+    title: Loyalty FEP Offline
+    condition: B
+    data:
+    - refId: A
+      queryType: ''
+      relativeTimeRange:
+        from: 300
+        to: 0
+      datasourceUid: PBFA97CFB590B2093
+      model:
+        expr: posproctor_loyalty_fep_status == 0
+        intervalMs: 1000
+        maxDataPoints: 43200
+        refId: A
+    - refId: B
+      queryType: ''
+      relativeTimeRange:
+        from: 0
+        to: 0
+      datasourceUid: __expr__
+      model:
+        conditions:
+        - evaluator:
+            params:
+            - 0
+            type: gt
+          operator:
+            type: and
+          query:
+            params:
+            - B
+          type: query
+        datasource:
+          type: __expr__
+          uid: __expr__
+        expression: A
+        reducer: count
+        type: reduce
+    intervalSeconds: 60
+    maxNoDataTimeoutSeconds: 300
+    noDataState: OK
+    execErrState: Alerting
+    for: 15m
+    annotations:
+      summary: "\U0001F6A8 {{ $labels.store }} ({{ $labels.group }}) - Rewards System\
+        \ Offline"
+      description: "**Loyalty System SYSTEM OFFLINE**\n\n\U0001F4CD **Location:** {{\
+        \ $labels.store }}, {{ $labels.group }}\n\U0001F3C6 **Device:** Loyalty FEP\
+        \ (Loyalty System)\n\U0001F310 **Commander:** {{ $labels.ip }}\n\U0001F4B0 **Impact:**\
+        \ Customer loyalty points and discounts unavailable\n\n**Priority:** LOW -\
+        \ Sales continue but loyalty benefits unavailable\n"
+    labels:
+      severity: info
+  - uid: commander-unreachable
+    title: Commander Unreachable
+    condition: B
+    data:
+    - refId: A
+      queryType: ''
+      relativeTimeRange:
+        from: 300
+        to: 0
+      datasourceUid: PBFA97CFB590B2093
+      model:
+        expr: posproctor_scrape_success == 0
+        intervalMs: 1000
+        maxDataPoints: 43200
+        refId: A
+    - refId: B
+      queryType: ''
+      relativeTimeRange:
+        from: 0
+        to: 0
+      datasourceUid: __expr__
+      model:
+        conditions:
+        - evaluator:
+            params:
+            - 0
+            type: gt
+          operator:
+            type: and
+          query:
+            params:
+            - B
+          type: query
+        datasource:
+          type: __expr__
+          uid: __expr__
+        expression: A
+        reducer: count
+        type: reduce
+    intervalSeconds: 60
+    maxNoDataTimeoutSeconds: 300
+    noDataState: OK
+    execErrState: Alerting
+    for: 10m
+    annotations:
+      summary: "\U0001F6A8 {{ $labels.store }} ({{ $labels.group }}) - Commander System\
+        \ Unreachable"
+      description: "**COMMANDER SYSTEM UNREACHABLE**\n\n\U0001F4CD **Location:** {{\
+        \ $labels.store }}, {{ $labels.group }}\n\U0001F50C **Device:** Commander\
+        \ System (Network/Power Issue)\n\U0001F310 **Commander:** {{ $labels.ip }}\n\
+        \u26A0\uFE0F **Impact:** Cannot monitor any devices - site may be down\n\n\
+        **Priority:** HIGH - Complete loss of monitoring/control\n"
+    labels:
+      severity: critical

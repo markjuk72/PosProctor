@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Configuration - POSProctor{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dark mode for config page */
+    body.dark-mode .form-check-input {
+        background-color: var(--dm-surface);
+        border-color: var(--dm-card-border);
+    }
+
+    body.dark-mode .form-check-input:checked {
+        background-color: var(--posproctor-teal);
+        border-color: var(--posproctor-teal);
+    }
+
+    body.dark-mode .form-check-label {
+        color: var(--dm-text);
+    }
+
+    body.dark-mode .card.bg-light {
+        background: var(--dm-surface) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-cog text-primary"></i> Configuration
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-sliders-h"></i> Monitoring Settings</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('update_config') }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="timeout_seconds" class="form-label">Request Timeout (seconds)</label>
+                                <input type="number" class="form-control" id="timeout_seconds" name="timeout_seconds" value="{{ settings.get('timeout_seconds', 30) }}" min="10" max="120">
+                                <div class="form-text">How long to wait for Commander API responses</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="max_workers" class="form-label">Max Workers</label>
+                                <input type="number" class="form-control" id="max_workers" name="max_workers" value="{{ settings.get('max_workers', 10) }}" min="1" max="50">
+                                <div class="form-text">Number of concurrent commander polls</div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <h6 class="mb-3"><i class="fas fa-bug"></i> Debugging</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="xml_debug_enabled" name="xml_debug_enabled" {% if settings.get('xml_debug_enabled', False) %}checked{% endif %}>
+                                    <label class="form-check-label" for="xml_debug_enabled">
+                                        <strong>XML Debug Mode</strong>
+                                    </label>
+                                </div>
+                                <div class="form-text">Save raw XML responses from Commanders for troubleshooting</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="xml_debug_retention_minutes" class="form-label">XML Debug Retention (minutes)</label>
+                                <input type="number" class="form-control" id="xml_debug_retention_minutes" name="xml_debug_retention_minutes" value="{{ settings.get('xml_debug_retention_minutes', 60) }}" min="10" max="1440">
+                                <div class="form-text">How long to keep debug XML files</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Configuration
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MCP Server Configuration -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-plug"></i> MCP Server (AI Integration)</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('update_mcp_config') }}">
+                    <div class="row">
+                        <div class="col-12">
+                            <p class="text-muted">
+                                Enable the MCP (Model Context Protocol) server to allow AI assistants like Claude
+                                to query PosProctor data including logs, metrics, and store information.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="mcp_enabled" name="mcp_enabled"
+                                       {% if settings.get('mcp_enabled', 'true') == 'true' %}checked{% endif %}>
+                                <label class="form-check-label" for="mcp_enabled">
+                                    <strong>Enable MCP Server</strong>
+                                </label>
+                            </div>
+                            <small class="text-muted">When enabled, the MCP server accepts connections on port 8002</small>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save MCP Configuration
+                    </button>
+                </form>
+
+                <hr class="my-4">
+
+                <h6><i class="fas fa-info-circle text-info"></i> Claude Desktop Configuration</h6>
+                <p class="small text-muted">Add this server URL in Claude Desktop settings (Settings → MCP Servers):</p>
+                <div class="card bg-dark text-light">
+                    <div class="card-body">
+                        <code style="font-size: 14px;">https://{{ request.host.split(':')[0] }}/mcp/sse</code>
+                    </div>
+                </div>
+                <small class="text-muted mt-2 d-block">
+                    <i class="fas fa-shield-alt text-warning"></i> No authentication required - ensure this server is only accessible on your private network.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Configuration Export/Import -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-exchange-alt"></i> Configuration Export / Import</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <p class="text-muted">Export your configuration (settings and commanders) to transfer to another POSProctor instance. Secrets and credentials are not included in the export.</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6><i class="fas fa-download text-primary"></i> Export Configuration</h6>
+                                <p class="small text-muted mb-3">Download current settings and all commanders as a JSON file.</p>
+                                <a href="{{ url_for('export_config') }}" class="btn btn-primary">
+                                    <i class="fas fa-file-export"></i> Export Configuration
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6><i class="fas fa-upload text-success"></i> Import Configuration</h6>
+                                <p class="small text-muted mb-3">Upload a previously exported JSON configuration file.</p>
+                                <form method="POST" action="{{ url_for('import_config') }}" enctype="multipart/form-data">
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="config_file" name="config_file" accept=".json" required>
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-file-import"></i> Import
+                                        </button>
+                                    </div>
+                                    <small class="text-muted">Existing commanders with matching IPs will be updated.</small>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

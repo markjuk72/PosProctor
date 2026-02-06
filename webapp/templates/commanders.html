@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}Commanders - POSProctor{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dark mode for commanders page */
+    body.dark-mode .bg-light {
+        background: var(--dm-surface) !important;
+        color: var(--dm-text) !important;
+    }
+
+    body.dark-mode .form-check-input {
+        background-color: var(--dm-surface);
+        border-color: var(--dm-card-border);
+    }
+
+    body.dark-mode .form-check-input:checked {
+        background-color: var(--posproctor-teal);
+        border-color: var(--posproctor-teal);
+    }
+
+    /* Table text colors in dark mode */
+    body.dark-mode .table tbody tr td {
+        color: var(--dm-text) !important;
+    }
+
+    body.dark-mode .table tbody tr td strong {
+        color: var(--dm-text) !important;
+    }
+
+    body.dark-mode .table tbody tr td code {
+        color: var(--posproctor-orange) !important;
+        background-color: var(--dm-surface) !important;
+    }
+
+    body.dark-mode .table thead th {
+        color: var(--dm-text) !important;
+    }
+
+    /* Ensure striped rows have correct text color */
+    body.dark-mode .table-striped > tbody > tr:nth-of-type(odd) > td {
+        color: var(--dm-text) !important;
+    }
+
+    body.dark-mode .table-striped > tbody > tr:nth-of-type(even) > td {
+        color: var(--dm-text) !important;
+    }
+
+    /* Checkbox styling */
+    body.dark-mode .commander-checkbox,
+    body.dark-mode #selectAllCheckbox {
+        accent-color: var(--posproctor-teal);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-list text-primary"></i> Commanders Management
+        </h1>
+    </div>
+</div>
+
+<!-- Add Commander Form -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-plus"></i> Add New Commander</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('add_commander') }}">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="ip" placeholder="IP Address (e.g., 10.0.0.1)" required>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="store_name" placeholder="Store Name (e.g., Store 001)" required>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control" name="group_name" placeholder="Group">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control" name="brand" placeholder="Brand">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Commanders Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-database"></i> Configured Commanders ({{ commanders|length }})</h5>
+                <div>
+                    <span class="badge bg-success me-2">{{ commanders|selectattr('enabled', 'equalto', 1)|list|length }} Enabled</span>
+                    <span class="badge bg-secondary">{{ commanders|selectattr('enabled', 'equalto', 0)|list|length }} Disabled</span>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if commanders %}
+                <!-- Bulk Actions -->
+                <div class="mb-3 p-3 bg-light rounded">
+                    <form method="POST" action="{{ url_for('bulk_commander_action') }}" id="bulkActionForm">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <strong><i class="fas fa-check-square"></i> Bulk Actions:</strong>
+                            </div>
+                            <div class="col-md-8 text-end">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAll()">
+                                    <i class="fas fa-check-double"></i> Select All
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAll()">
+                                    <i class="fas fa-times"></i> Deselect All
+                                </button>
+                                <button type="submit" name="action" value="enable" class="btn btn-sm btn-success" onclick="return confirmBulkAction('enable')">
+                                    <i class="fas fa-toggle-on"></i> Enable Selected
+                                </button>
+                                <button type="submit" name="action" value="disable" class="btn btn-sm btn-warning" onclick="return confirmBulkAction('disable')">
+                                    <i class="fas fa-toggle-off"></i> Disable Selected
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">
+                                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleAllCheckboxes(this)" title="Select/Deselect All">
+                                </th>
+                                <th>IP Address</th>
+                                <th>Store Name</th>
+                                <th>Group</th>
+                                <th>Brand</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for commander in commanders %}
+                            <tr id="commander-{{ commander.id }}">
+                                <td>
+                                    <input type="checkbox" class="commander-checkbox" name="commander_ids" value="{{ commander.id }}" form="bulkActionForm">
+                                </td>
+                                <td><code>{{ commander.ip }}</code></td>
+                                <td><strong>{{ commander.store_name }}</strong></td>
+                                <td>{{ commander.group_name or '-' }}</td>
+                                <td>{{ commander.brand or '-' }}</td>
+                                <td>
+                                    {% if commander.enabled %}
+                                        <span class="badge bg-success"><i class="fas fa-check-circle"></i> Enabled</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary"><i class="fas fa-times-circle"></i> Disabled</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-nowrap">
+                                    <button type="button" class="btn btn-sm btn-info" title="Edit"
+                                            onclick="openEditModal({{ commander.id }}, '{{ commander.ip }}', '{{ commander.store_name }}', '{{ commander.group_name or '' }}', '{{ commander.brand or '' }}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <form method="POST" action="{{ url_for('toggle_commander', commander_id=commander.id) }}" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm {% if commander.enabled %}btn-warning{% else %}btn-success{% endif %}"
+                                                title="{% if commander.enabled %}Disable{% else %}Enable{% endif %}">
+                                            <i class="fas fa-{% if commander.enabled %}toggle-off{% else %}toggle-on{% endif %}"></i>
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('delete_commander', commander_id=commander.id) }}" style="display: inline;" onsubmit="return confirm('Delete {{ commander.store_name }}?');">
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">
+                                    <i class="fas fa-inbox fa-2x mb-2"></i>
+                                    <p>No commanders configured. Add one above to get started.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Commander Modal -->
+<div class="modal fade" id="editCommanderModal" tabindex="-1" aria-labelledby="editCommanderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" id="editCommanderForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCommanderModalLabel">
+                        <i class="fas fa-edit"></i> Edit Commander
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editIp" class="form-label"><strong>IP Address</strong></label>
+                        <input type="text" class="form-control" id="editIp" name="ip" required
+                               placeholder="e.g., 10.0.0.1" pattern="[\d.]+" title="Enter a valid IP address">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editStoreName" class="form-label"><strong>Store Name</strong></label>
+                        <input type="text" class="form-control" id="editStoreName" name="store_name" required
+                               placeholder="e.g., Store 116">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editGroupName" class="form-label"><strong>Group</strong></label>
+                        <input type="text" class="form-control" id="editGroupName" name="group_name"
+                               placeholder="e.g., New Mexico">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editBrand" class="form-label"><strong>Brand</strong></label>
+                        <input type="text" class="form-control" id="editBrand" name="brand"
+                               placeholder="e.g., Sinclair">
+                    </div>
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle"></i>
+                        Changes take effect immediately. The monitoring service will pick up the new IP within minutes.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function selectAll() {
+    document.querySelectorAll('.commander-checkbox').forEach(cb => cb.checked = true);
+    document.getElementById('selectAllCheckbox').checked = true;
+}
+
+function deselectAll() {
+    document.querySelectorAll('.commander-checkbox').forEach(cb => cb.checked = false);
+    document.getElementById('selectAllCheckbox').checked = false;
+}
+
+function toggleAllCheckboxes(masterCheckbox) {
+    document.querySelectorAll('.commander-checkbox').forEach(cb => cb.checked = masterCheckbox.checked);
+}
+
+function confirmBulkAction(action) {
+    const selected = document.querySelectorAll('.commander-checkbox:checked').length;
+    if (selected === 0) {
+        alert('Please select at least one commander');
+        return false;
+    }
+    return confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} ${selected} commander(s)?\n\nNote: Changes take effect immediately without restarting containers!`);
+}
+
+function openEditModal(id, ip, storeName, groupName, brand) {
+    document.getElementById('editCommanderForm').action = '/commanders/' + id + '/update';
+    document.getElementById('editIp').value = ip;
+    document.getElementById('editStoreName').value = storeName;
+    document.getElementById('editGroupName').value = groupName;
+    document.getElementById('editBrand').value = brand;
+    document.getElementById('editCommanderModalLabel').innerHTML =
+        '<i class="fas fa-edit"></i> Edit Commander - ' + storeName;
+    new bootstrap.Modal(document.getElementById('editCommanderModal')).show();
+}
+</script>
+{% endblock %}

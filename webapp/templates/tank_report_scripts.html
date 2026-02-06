@@ -1,0 +1,271 @@
+<script>
+// Chart.js initialization for Tank Report
+document.addEventListener('DOMContentLoaded', function() {
+    // Color palette for charts
+    const chartColors = {
+        regular: '#4CAF50',
+        plus: '#2196F3',
+        premium: '#FF9800',
+        diesel: '#795548',
+        default: ['#4CAF50', '#2196F3', '#FF9800', '#795548', '#9C27B0', '#00BCD4']
+    };
+
+    // Delivery by Tank Chart (Pie)
+    {% if delivery_summary and delivery_summary.by_tank %}
+    const deliveryByTankCtx = document.getElementById('deliveryByTankChart');
+    if (deliveryByTankCtx) {
+        new Chart(deliveryByTankCtx.getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: [{% for tank_name, tank_data in delivery_summary.by_tank.items() %}'{{ tank_data.full_name }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+                datasets: [{
+                    data: [{% for tank_name, tank_data in delivery_summary.by_tank.items() %}{{ tank_data.total_gallons }}{% if not loop.last %}, {% endif %}{% endfor %}],
+                    backgroundColor: [{% for tank_name, tank_data in delivery_summary.by_tank.items() %}'{{ tank_data.color }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: ${value.toLocaleString()} gal (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Monthly Delivery Chart (Bar)
+    const monthlyDeliveryCtx = document.getElementById('monthlyDeliveryChart');
+    if (monthlyDeliveryCtx) {
+        // Group deliveries by month
+        const monthlyData = {};
+        {% for d in delivery_list %}
+        {
+            const date = '{{ d.start_display }}'.substring(0, 7); // Get YYYY-MM
+            if (!monthlyData[date]) monthlyData[date] = 0;
+            monthlyData[date] += {{ d.delivered_gallons }};
+        }
+        {% endfor %}
+
+        const months = Object.keys(monthlyData).sort();
+        const volumes = months.map(m => monthlyData[m]);
+
+        new Chart(monthlyDeliveryCtx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Gallons Delivered',
+                    data: volumes,
+                    backgroundColor: '#17a2b8',
+                    borderColor: '#138496',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + ' gal';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+
+    // Alarm Type Chart (Pie)
+    {% if alarm_history %}
+    const alarmTypeCtx = document.getElementById('alarmTypeChart');
+    if (alarmTypeCtx) {
+        // Count alarms by type
+        const alarmCounts = {};
+        {% for alarm in alarm_history %}
+        {
+            const type = '{{ alarm.alarm_type }}';
+            if (!alarmCounts[type]) alarmCounts[type] = 0;
+            alarmCounts[type]++;
+        }
+        {% endfor %}
+
+        const alarmTypes = Object.keys(alarmCounts);
+        const alarmValues = alarmTypes.map(t => alarmCounts[t]);
+        const alarmColors = ['#dc3545', '#ffc107', '#fd7e14', '#6f42c1', '#20c997', '#17a2b8'];
+
+        new Chart(alarmTypeCtx.getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: alarmTypes,
+                datasets: [{
+                    data: alarmValues,
+                    backgroundColor: alarmColors.slice(0, alarmTypes.length),
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+
+    // Alarm by Tank Chart (Bar)
+    const alarmByTankCtx = document.getElementById('alarmByTankChart');
+    if (alarmByTankCtx) {
+        // Count alarms by tank
+        const tankAlarmCounts = {};
+        {% for alarm in alarm_history %}
+        {
+            const tank = '{{ alarm.tank_name }}';
+            if (!tankAlarmCounts[tank]) tankAlarmCounts[tank] = 0;
+            tankAlarmCounts[tank]++;
+        }
+        {% endfor %}
+
+        const tanks = Object.keys(tankAlarmCounts);
+        const counts = tanks.map(t => tankAlarmCounts[t]);
+
+        new Chart(alarmByTankCtx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: tanks,
+                datasets: [{
+                    label: 'Alarms',
+                    data: counts,
+                    backgroundColor: '#dc3545',
+                    borderColor: '#c82333',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+
+    // Reconciliation Charts
+    {% if reconciliation %}
+    // Dispensed Volume Chart (Bar)
+    const dispensedCtx = document.getElementById('dispensedChart');
+    if (dispensedCtx) {
+        new Chart(dispensedCtx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: [{% for rec in reconciliation %}'{{ rec.tank_name }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Dispensed (gal)',
+                    data: [{% for rec in reconciliation %}{{ rec.dispensed }}{% if not loop.last %}, {% endif %}{% endfor %}],
+                    backgroundColor: [{% for rec in reconciliation %}'{{ rec.color }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Variance Chart (Bar with positive/negative)
+    const varianceCtx = document.getElementById('varianceChart');
+    if (varianceCtx) {
+        const varianceData = [{% for rec in reconciliation %}{{ rec.variance }}{% if not loop.last %}, {% endif %}{% endfor %}];
+        const varianceColors = varianceData.map(v => v >= 0 ? '#28a745' : '#dc3545');
+
+        new Chart(varianceCtx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: [{% for rec in reconciliation %}'{{ rec.tank_name }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Variance (gal)',
+                    data: varianceData,
+                    backgroundColor: varianceColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed.y;
+                                return `Variance: ${value >= 0 ? '+' : ''}${value.toFixed(1)} gal`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: function(value) {
+                                return (value >= 0 ? '+' : '') + value.toFixed(0);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+});
+</script>

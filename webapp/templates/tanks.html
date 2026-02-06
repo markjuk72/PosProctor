@@ -1,0 +1,1414 @@
+{% extends "base.html" %}
+
+{% block title %}Tanks - POSProctor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tabs-container {
+        border-bottom: 2px solid #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    .tab-buttons {
+        display: flex;
+        gap: 0;
+    }
+
+    .tab-btn {
+        padding: 12px 24px;
+        background: transparent;
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #6c757d;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+        color: var(--posproctor-teal);
+        background: #f8f9fa;
+    }
+
+    .tab-btn.active {
+        color: var(--posproctor-teal);
+        border-bottom-color: var(--posproctor-teal);
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .stat-card {
+        background: var(--posproctor-light-teal);
+        border: 1px solid var(--posproctor-teal);
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: var(--posproctor-teal);
+    }
+
+    .loading-spinner {
+        text-align: center;
+        padding: 40px;
+    }
+
+    .loading-spinner i {
+        font-size: 3em;
+        color: var(--posproctor-teal);
+    }
+
+    .store-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .store-card {
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .store-card:hover {
+        border-color: var(--posproctor-teal);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transform: translateY(-1px);
+    }
+
+    .store-card .store-name {
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .store-card .store-status {
+        margin-bottom: 4px;
+    }
+
+    .store-card .tank-count {
+        font-size: 11px;
+        color: #666;
+    }
+
+    .store-card.status-online {
+        border-left: 4px solid #28a745;
+    }
+
+    .store-card.status-no_tls {
+        border-left: 4px solid #ffc107;
+    }
+
+    .store-card.status-offline {
+        border-left: 4px solid #dc3545;
+    }
+
+    .group-section {
+        margin-bottom: 20px;
+    }
+
+    .group-header {
+        background: var(--posproctor-light-teal);
+        padding: 8px 12px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .group-header .group-stats {
+        font-weight: normal;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .pdf-download-bar {
+        display: none;
+        background: var(--posproctor-light-teal);
+        border: 1px solid var(--posproctor-teal);
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .pdf-download-bar .btn {
+        margin-left: 10px;
+    }
+
+    /* === DARK MODE === */
+    body.dark-mode .tabs-container {
+        border-color: var(--dm-card-border);
+    }
+
+    body.dark-mode .tab-btn {
+        color: var(--dm-text-muted);
+    }
+
+    body.dark-mode .tab-btn:hover {
+        color: var(--posproctor-teal);
+        background: var(--dm-surface);
+    }
+
+    body.dark-mode .tab-btn.active {
+        color: var(--posproctor-teal);
+    }
+
+    body.dark-mode .stat-card {
+        background: var(--dm-surface);
+        border-color: var(--dm-card-border);
+    }
+
+    body.dark-mode .stat-label {
+        color: var(--dm-text-muted);
+    }
+
+    body.dark-mode .stat-value {
+        color: var(--posproctor-teal);
+    }
+
+    body.dark-mode .store-card {
+        background: var(--dm-card);
+        border-color: var(--dm-card-border);
+        color: var(--dm-text);
+    }
+
+    body.dark-mode .store-card:hover {
+        border-color: var(--posproctor-teal);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    body.dark-mode .store-card .tank-count {
+        color: var(--dm-text-muted);
+    }
+
+    body.dark-mode .group-header {
+        background: linear-gradient(135deg, #4a3f35 0%, #3a322c 100%);
+        color: var(--dm-text);
+    }
+
+    body.dark-mode .group-header .group-stats {
+        color: var(--dm-text-muted);
+    }
+
+    body.dark-mode .pdf-download-bar {
+        background: var(--dm-surface);
+        border-color: var(--dm-card-border);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-gas-pump text-primary"></i> Tank Management
+        </h1>
+    </div>
+</div>
+
+<div class="tabs-container">
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('overview')">
+            <i class="fas fa-th-list"></i> Overview
+        </button>
+        <button class="tab-btn" onclick="switchTab('query')">
+            <i class="fas fa-search"></i> Query
+        </button>
+        <button class="tab-btn" onclick="switchTab('analysis')">
+            <i class="fas fa-chart-bar"></i> Analysis
+        </button>
+    </div>
+</div>
+
+<!-- Overview Tab -->
+<div id="overviewTab" class="tab-content active">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-th-list"></i> Fleet Tank Sensor Status</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex align-items-center flex-wrap gap-3 mb-3">
+                <button type="button" class="btn btn-primary" onclick="refreshTLSStatus(false)">
+                    <i class="fas fa-sync"></i> <span id="refreshBtnText">Refresh Status</span>
+                </button>
+                <button type="button" class="btn btn-outline-warning btn-sm" onclick="refreshTLSStatus(true)" title="Bypass monitoring data and scan commanders directly">
+                    <i class="fas fa-satellite-dish"></i> Force Direct Scan
+                </button>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label mb-0 text-muted">Group by:</label>
+                    <div class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="groupBy" id="groupByState" value="state" checked onchange="updateGrouping()">
+                        <label class="btn btn-outline-secondary btn-sm" for="groupByState">State</label>
+                        <input type="radio" class="btn-check" name="groupBy" id="groupByBrand" value="brand" onchange="updateGrouping()">
+                        <label class="btn btn-outline-secondary btn-sm" for="groupByBrand">Brand</label>
+                        <input type="radio" class="btn-check" name="groupBy" id="groupByNone" value="none" onchange="updateGrouping()">
+                        <label class="btn btn-outline-secondary btn-sm" for="groupByNone">None</label>
+                    </div>
+                </div>
+                <span id="overviewLastUpdate" class="ms-auto text-muted small"></span>
+            </div>
+
+            <div id="overviewStatus"></div>
+
+            <div id="overviewStats" class="stats-grid" style="display: none;"></div>
+
+            <div id="overviewLoading" class="loading-spinner" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p class="mt-3">Scanning tank sensor status across all stores...</p>
+                <p class="small text-muted">This may take 30-60 seconds</p>
+            </div>
+
+            <div id="overviewMatrixContainer" style="display: none;" class="mt-3">
+                <div class="alert alert-info mb-3">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Legend:</strong>
+                    <span class="badge bg-success">Online</span> = TLS Connected
+                    <span class="badge bg-warning text-dark">No TLS</span> = No Tank Sensor
+                    <span class="badge bg-danger">Offline</span> = Unreachable
+                    | Click a store to view detailed report
+                </div>
+                <div id="storeGridContainer"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Query Tab -->
+<div id="queryTab" class="tab-content">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-download"></i> Fetch Tank Data by Date</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="queryStoreSelect" class="form-label">Select Store</label>
+                    <select class="form-select" id="queryStoreSelect">
+                        <option value="">-- Select a Store --</option>
+                        {% for cmd in commanders %}
+                        <option value="{{ cmd.ip }}" data-id="{{ cmd.id }}" data-store="{{ cmd.store_name }}">
+                            {{ cmd.store_name }} ({{ cmd.ip }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="queryDate" class="form-label">Report Date</label>
+                    <input type="date" class="form-control" id="queryDate">
+                </div>
+                <div class="col-md-2">
+                    <label for="queryPeriod" class="form-label">Period</label>
+                    <select class="form-select" id="queryPeriod">
+                        <option value="1">Current</option>
+                        <option value="2" selected>Day</option>
+                        <option value="3">Week</option>
+                        <option value="4">Month</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="button" class="btn btn-primary w-100" onclick="queryTankData()">
+                        <i class="fas fa-search"></i> Load Data
+                    </button>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-12">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Note: Tank data requires a Veeder-Root TLS connected to the Commander.
+                        Stores without TLS will show sales data only.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="queryStatus" class="mt-3"></div>
+
+    <div id="queryLoading" class="loading-spinner" style="display: none;">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p class="mt-3">Loading tank data...</p>
+        <p class="small text-muted">Querying Commander for tank data. This may take 15-30 seconds.</p>
+    </div>
+
+    <!-- Query Results -->
+    <div id="queryResults" style="display: none;" class="mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-gas-pump"></i> Tank Data Summary</h5>
+            </div>
+            <div class="card-body">
+                <div id="queryStats" class="stats-grid mb-3"></div>
+
+                <div id="queryActions" class="d-flex align-items-center gap-2 mb-3">
+                    <button class="btn btn-sm btn-success" onclick="downloadTankCSV()">
+                        <i class="fas fa-download"></i> Download CSV
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="switchTab('analysis')">
+                        <i class="fas fa-chart-bar"></i> View Analysis
+                    </button>
+                </div>
+
+                <!-- Inventory Table -->
+                <div id="inventorySection" style="display: none;">
+                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-database"></i> Tank Inventory</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Tank</th>
+                                    <th>Product</th>
+                                    <th class="text-end">Volume (gal)</th>
+                                    <th class="text-end">Capacity (gal)</th>
+                                    <th class="text-end">Fill %</th>
+                                    <th class="text-end">Ullage (gal)</th>
+                                    <th class="text-end">Water (in)</th>
+                                    <th class="text-end">Temp (F)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Reconciliation Table -->
+                <div id="reconciliationSection" style="display: none;" class="mt-4">
+                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-balance-scale"></i> Reconciliation / Variance</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Tank</th>
+                                    <th>Product</th>
+                                    <th class="text-end">Begin (gal)</th>
+                                    <th class="text-end">End (gal)</th>
+                                    <th class="text-end">Dispensed (gal)</th>
+                                    <th class="text-end">Variance (gal)</th>
+                                    <th class="text-end">Variance %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reconciliationTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Deliveries Table -->
+                <div id="deliveriesSection" style="display: none;" class="mt-4">
+                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-truck"></i> Deliveries</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Tank</th>
+                                    <th>Product</th>
+                                    <th>Date/Time</th>
+                                    <th class="text-end">Volume (gal)</th>
+                                    <th class="text-end">Start (gal)</th>
+                                    <th class="text-end">End (gal)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="deliveriesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sales Table -->
+                <div id="salesSection" style="display: none;" class="mt-4">
+                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-chart-line"></i> Fuel Sales</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Grade</th>
+                                    <th class="text-end">Transactions</th>
+                                    <th class="text-end">Volume (gal)</th>
+                                    <th class="text-end">Amount ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Alarms Section -->
+                <div id="alarmsSection" style="display: none;" class="mt-4">
+                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-bell"></i> Tank Alarms</h6>
+
+                    <!-- Active Alarm Status -->
+                    <div id="alarmStatusSection" class="mb-3">
+                        <div id="alarmStatusContainer"></div>
+                    </div>
+
+                    <!-- Alarm History -->
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Tank</th>
+                                    <th>Alarm Type</th>
+                                    <th>Date</th>
+                                    <th>Severity</th>
+                                </tr>
+                            </thead>
+                            <tbody id="alarmsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- No TLS Message -->
+                <div id="noTlsMessage" style="display: none;" class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>No Tank Level Sensor (TLS) data available for this store.</strong>
+                    Only fuel sales data is shown below.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analysis Tab -->
+<div id="analysisTab" class="tab-content">
+    <div id="analysisNoData" class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-chart-bar fa-4x text-muted mb-3"></i>
+            <h4>No Tank Data Loaded</h4>
+            <p class="text-muted">Load tank data from the Query tab first, then return here to see detailed analysis and charts.</p>
+            <button class="btn btn-primary" onclick="switchTab('query')">
+                <i class="fas fa-search"></i> Go to Query Tab
+            </button>
+        </div>
+    </div>
+
+    <div id="analysisContent" style="display: none;">
+        <!-- Analysis Summary Stats -->
+        <div id="analysisSummary" class="stats-grid mb-4"></div>
+
+        <!-- PDF/Print Actions Bar -->
+        <div id="pdf-download-bar" class="pdf-download-bar mb-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <i class="fas fa-check-circle text-success"></i>
+                    <strong id="report-store-name">Report loaded</strong>
+                    <span class="text-muted ms-2" id="report-timestamp"></span>
+                </div>
+                <div>
+                    <button id="print-btn" class="btn btn-outline-secondary btn-sm" onclick="printReport()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <button id="pdf-btn" class="btn btn-primary btn-sm" onclick="downloadPDF()">
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Tank Levels Chart -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-battery-half"></i> Current Tank Levels</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="tankLevelsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fuel Sales Chart -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-chart-pie"></i> Sales by Fuel Grade</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="fuelSalesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Tank Inventory Table -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-database"></i> Tank Inventory Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="tankInventoryTable"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Deliveries -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-truck"></i> Recent Deliveries</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="deliveriesTable"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alarms Section -->
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Active Alarms & History</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="alarmsTable"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+// Global variables
+let currentTab = 'overview';
+let tlsStatusData = null;
+let currentTankData = null;
+let analysisCharts = {};
+let currentStoreIp = null;
+let currentStoreName = null;
+let currentStoreId = null;
+
+// Tab switching
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(tabName + 'Tab').classList.add('active');
+    event.target.closest('.tab-btn').classList.add('active');
+    currentTab = tabName;
+
+    // Load data for specific tabs
+    if (tabName === 'analysis' && currentTankData) {
+        updateAnalysisCharts();
+    }
+}
+
+// ===========================================
+// OVERVIEW TAB FUNCTIONS
+// ===========================================
+
+// Format time ago in a friendly way
+function formatTimeAgo(date) {
+    const now = new Date();
+    const diffMs = now - date;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+
+    if (diffSec < 60) {
+        return 'just now';
+    } else if (diffMin < 2) {
+        return '1 minute ago';
+    } else if (diffMin < 60) {
+        return `${diffMin} minutes ago`;
+    } else if (diffHour < 2) {
+        return '1 hour ago';
+    } else if (diffHour < 24) {
+        return `${diffHour} hours ago`;
+    } else if (diffDay < 2) {
+        return 'yesterday';
+    } else {
+        return `${diffDay} days ago`;
+    }
+}
+
+function refreshTLSStatus(forceScan = false) {
+    const loadingDiv = document.getElementById('overviewLoading');
+    const statusDiv = document.getElementById('overviewStatus');
+    const containerDiv = document.getElementById('overviewMatrixContainer');
+    const statsDiv = document.getElementById('overviewStats');
+    const btn = document.getElementById('refreshBtnText');
+    const loadingText = document.querySelector('#overviewLoading p');
+
+    loadingDiv.style.display = 'block';
+    containerDiv.style.display = 'none';
+    statsDiv.style.display = 'none';
+    statusDiv.innerHTML = '';
+
+    if (forceScan) {
+        btn.textContent = 'Direct Scanning...';
+        if (loadingText) loadingText.textContent = 'Directly scanning all commanders (bypassing cache)...';
+    } else {
+        btn.textContent = 'Loading...';
+        if (loadingText) loadingText.textContent = 'Loading tank sensor status...';
+    }
+
+    const url = forceScan ? '/api/tanks/fleet-status?force_scan=true' : '/api/tanks/fleet-status';
+
+    fetch(url)
+    .then(response => response.json())
+    .then(data => {
+        loadingDiv.style.display = 'none';
+        btn.textContent = 'Refresh Status';
+
+        if (data.success) {
+            tlsStatusData = data;
+            displayTLSStatus(data);
+            containerDiv.style.display = 'block';
+            statsDiv.style.display = 'grid';
+
+            // Also update the Query tab dropdown with status info
+            updateQueryDropdownWithStatus(data);
+
+            // Show source indicator with data freshness
+            let sourceText = '';
+            if (data.source === 'prometheus') {
+                sourceText = '<i class="fas fa-database text-info"></i> Monitoring service data';
+                if (data.last_scrape_timestamp) {
+                    const scrapeTime = new Date(data.last_scrape_timestamp * 1000);
+                    const freshnessText = formatTimeAgo(scrapeTime);
+                    sourceText += ` <span class="text-muted">(checked ${freshnessText})</span>`;
+                }
+            } else {
+                sourceText = '<i class="fas fa-satellite-dish text-warning"></i> Direct scan just now';
+            }
+            document.getElementById('overviewLastUpdate').innerHTML = sourceText;
+        } else {
+            statusDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> ${data.error}</div>`;
+        }
+    })
+    .catch(error => {
+        loadingDiv.style.display = 'none';
+        btn.textContent = 'Refresh Status';
+        statusDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle"></i> Error: ${error.message}</div>`;
+    });
+}
+
+function getGrouping() {
+    const selected = document.querySelector('input[name="groupBy"]:checked');
+    return selected ? selected.value : 'brand';
+}
+
+function updateGrouping() {
+    if (tlsStatusData) {
+        displayTLSStatus(tlsStatusData);
+    }
+}
+
+function extractState(storeName) {
+    const stateMatch = storeName.match(/,\s*([A-Z]{2})(?:\s|$)/i) ||
+                       storeName.match(/\b([A-Z]{2})$/i);
+    if (stateMatch) return stateMatch[1].toUpperCase();
+    const parenMatch = storeName.match(/\(([A-Z]{2})\)/i);
+    if (parenMatch) return parenMatch[1].toUpperCase();
+    return 'Unknown';
+}
+
+function extractStoreNumber(storeName) {
+    const match = (storeName || '').match(/(\d+)/);
+    return match ? parseInt(match[1]) : Infinity;
+}
+
+// Define the desired state order for grouping
+const STATE_ORDER = ['ID', 'WY', 'NM', 'UT', 'AZ', 'CO', 'MT'];
+const STATE_NAMES = {
+    'ID': 'Idaho', 'WY': 'Wyoming', 'NM': 'New Mexico',
+    'UT': 'Utah', 'AZ': 'Arizona', 'CO': 'Colorado', 'MT': 'Montana'
+};
+
+function getStateOrderIndex(stateCode) {
+    const idx = STATE_ORDER.indexOf(stateCode.toUpperCase());
+    return idx >= 0 ? idx : STATE_ORDER.length;
+}
+
+function displayTLSStatus(data) {
+    const gridContainer = document.getElementById('storeGridContainer');
+    const statsDiv = document.getElementById('overviewStats');
+    const groupBy = getGrouping();
+
+    // Update stats
+    const totalStores = data.stores?.length || 0;
+    const tlsOnline = data.stores?.filter(s => s.tls_status === 'online').length || 0;
+    const tlsOffline = data.stores?.filter(s => s.tls_status === 'no_tls').length || 0;
+    const commanderOffline = data.stores?.filter(s => s.tls_status === 'offline').length || 0;
+
+    statsDiv.innerHTML = `
+        <div class="stat-card">
+            <div class="stat-label">Total Stores</div>
+            <div class="stat-value">${totalStores}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">TLS Online</div>
+            <div class="stat-value text-success">${tlsOnline}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">No TLS</div>
+            <div class="stat-value text-warning">${tlsOffline}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Offline</div>
+            <div class="stat-value text-danger">${commanderOffline}</div>
+        </div>
+    `;
+
+    // Group stores
+    const storesByGroup = {};
+    (data.stores || []).forEach(store => {
+        let groupKey;
+        switch (groupBy) {
+            case 'state':
+                groupKey = store.group_name || extractState(store.store_name);
+                break;
+            case 'brand':
+                groupKey = store.brand || 'Other';
+                break;
+            case 'none':
+            default:
+                groupKey = null;
+                break;
+        }
+
+        if (groupKey === null) {
+            if (!storesByGroup['_all']) storesByGroup['_all'] = [];
+            storesByGroup['_all'].push(store);
+        } else {
+            if (!storesByGroup[groupKey]) storesByGroup[groupKey] = [];
+            storesByGroup[groupKey].push(store);
+        }
+    });
+
+    // Sort groups: use STATE_ORDER for states, alphabetical for brands
+    const sortedGroups = Object.keys(storesByGroup).sort((a, b) => {
+        if (a === '_all') return 0;
+        if (groupBy === 'state') {
+            return getStateOrderIndex(a) - getStateOrderIndex(b);
+        }
+        return a.localeCompare(b);
+    });
+
+    // Build grid HTML
+    let html = '';
+    for (const group of sortedGroups) {
+        const stores = storesByGroup[group];
+
+        // Sort stores by store number
+        stores.sort((a, b) => extractStoreNumber(a.store_name) - extractStoreNumber(b.store_name));
+
+        if (group !== '_all' && groupBy !== 'none') {
+            const groupTlsCount = stores.filter(s => s.tls_status === 'online').length;
+            html += `<div class="group-section">
+                <div class="group-header">
+                    <span>${group}</span>
+                    <span class="group-stats">${stores.length} stores, ${groupTlsCount} with TLS</span>
+                </div>
+                <div class="store-grid">`;
+        } else {
+            html += '<div class="store-grid">';
+        }
+
+        stores.forEach(store => {
+            const statusClass = store.tls_status === 'online' ? 'bg-success' :
+                               store.tls_status === 'no_tls' ? 'bg-warning text-dark' : 'bg-danger';
+            const statusText = store.tls_status === 'online' ? 'Online' :
+                              store.tls_status === 'no_tls' ? 'No TLS' : 'Offline';
+            const tankText = store.tank_count > 0 ? `${store.tank_count} tank${store.tank_count > 1 ? 's' : ''}` : '';
+
+            html += `<div class="store-card status-${store.tls_status}" onclick="loadStoreReport('${store.ip}', '${store.store_name.replace(/'/g, "\\'")}', '${store.id || ''}')">
+                <div class="store-name" title="${store.store_name}">${store.store_name}</div>
+                <div class="store-status"><span class="badge ${statusClass}">${statusText}</span></div>
+                <div class="tank-count">${tankText}</div>
+            </div>`;
+        });
+
+        html += '</div>';
+        if (group !== '_all' && groupBy !== 'none') {
+            html += '</div>';
+        }
+    }
+
+    gridContainer.innerHTML = html || '<p class="text-center text-muted">No stores configured</p>';
+}
+
+function loadStoreReport(ip, storeName, storeId) {
+    // Set the values in query tab and switch to it
+    document.getElementById('queryStoreSelect').value = ip;
+    currentStoreIp = ip;
+    currentStoreName = storeName;
+    currentStoreId = storeId;
+    switchTab('query');
+    // Auto-load the data
+    queryTankData();
+}
+
+// ===========================================
+// QUERY TAB FUNCTIONS
+// ===========================================
+function queryTankData() {
+    const select = document.getElementById('queryStoreSelect');
+    const ip = select.value;
+    const date = document.getElementById('queryDate').value;
+    const period = document.getElementById('queryPeriod').value;
+
+    if (!ip) {
+        alert('Please select a store');
+        return;
+    }
+
+    currentStoreIp = ip;
+    const selectedOption = select.options[select.selectedIndex];
+    currentStoreName = selectedOption.dataset.store;
+    currentStoreId = selectedOption.dataset.id;
+
+    const loadingDiv = document.getElementById('queryLoading');
+    const statusDiv = document.getElementById('queryStatus');
+    const resultsDiv = document.getElementById('queryResults');
+
+    loadingDiv.style.display = 'block';
+    resultsDiv.style.display = 'none';
+    statusDiv.innerHTML = '';
+
+    // Build URL for the query API
+    const params = new URLSearchParams({
+        commander_ip: ip,
+        period: period
+    });
+    if (date) {
+        params.append('date', date);
+    }
+
+    fetch('/api/tanks/query?' + params.toString())
+    .then(response => response.json())
+    .then(data => {
+        loadingDiv.style.display = 'none';
+
+        if (data.success) {
+            currentTankData = data;
+            displayQueryResults(data);
+            resultsDiv.style.display = 'block';
+        } else {
+            statusDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle"></i> ${data.error || 'Failed to load tank data'}</div>`;
+        }
+    })
+    .catch(error => {
+        loadingDiv.style.display = 'none';
+        statusDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle"></i> Error: ${error.message}</div>`;
+    });
+}
+
+function displayQueryResults(data) {
+    // Update summary stats
+    const statsDiv = document.getElementById('queryStats');
+    const summary = data.summary || {};
+
+    statsDiv.innerHTML = `
+        <div class="stat-card">
+            <div class="stat-label">Store</div>
+            <div class="stat-value" style="font-size: 14px;">${data.store_name}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Tanks</div>
+            <div class="stat-value">${summary.tank_count || 0}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Volume</div>
+            <div class="stat-value">${(summary.total_volume || 0).toLocaleString()}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Deliveries</div>
+            <div class="stat-value">${summary.delivery_count || 0}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Sales Volume</div>
+            <div class="stat-value">${(summary.total_sales_volume || 0).toLocaleString()}</div>
+        </div>
+    `;
+
+    // Show/hide TLS message
+    const noTlsMsg = document.getElementById('noTlsMessage');
+    noTlsMsg.style.display = data.has_tls ? 'none' : 'block';
+
+    // Inventory table
+    const invSection = document.getElementById('inventorySection');
+    const invBody = document.getElementById('inventoryTableBody');
+    if (data.inventory && data.inventory.length > 0) {
+        invSection.style.display = 'block';
+        invBody.innerHTML = data.inventory.map(t => {
+            const fillClass = t.fill_percent < 20 ? 'text-danger' : t.fill_percent < 40 ? 'text-warning' : 'text-success';
+            return `<tr>
+                <td>${t.tank_id}</td>
+                <td>${t.product}</td>
+                <td class="text-end">${t.volume.toLocaleString()}</td>
+                <td class="text-end">${t.capacity.toLocaleString()}</td>
+                <td class="text-end ${fillClass}"><strong>${t.fill_percent}%</strong></td>
+                <td class="text-end">${t.ullage.toLocaleString()}</td>
+                <td class="text-end">${t.water}</td>
+                <td class="text-end">${t.temperature}</td>
+            </tr>`;
+        }).join('');
+    } else {
+        invSection.style.display = 'none';
+    }
+
+    // Reconciliation table
+    const recSection = document.getElementById('reconciliationSection');
+    const recBody = document.getElementById('reconciliationTableBody');
+    if (data.reconciliation && data.reconciliation.length > 0) {
+        recSection.style.display = 'block';
+        recBody.innerHTML = data.reconciliation.map(r => {
+            const varClass = r.variance_percent < -2 ? 'text-danger' : r.variance_percent > 2 ? 'text-warning' : 'text-success';
+            return `<tr>
+                <td>${r.tank_id}</td>
+                <td>${r.product}</td>
+                <td class="text-end">${r.begin_volume.toLocaleString()}</td>
+                <td class="text-end">${r.end_volume.toLocaleString()}</td>
+                <td class="text-end">${r.dispensed.toLocaleString()}</td>
+                <td class="text-end ${varClass}">${r.variance.toLocaleString()}</td>
+                <td class="text-end ${varClass}"><strong>${r.variance_percent}%</strong></td>
+            </tr>`;
+        }).join('');
+    } else {
+        recSection.style.display = 'none';
+    }
+
+    // Deliveries table
+    const delSection = document.getElementById('deliveriesSection');
+    const delBody = document.getElementById('deliveriesTableBody');
+    if (data.deliveries && data.deliveries.length > 0) {
+        delSection.style.display = 'block';
+        delBody.innerHTML = data.deliveries.map(d => `<tr>
+            <td>${d.tank_id}</td>
+            <td>${d.product}</td>
+            <td>${d.date} ${d.time || ''}</td>
+            <td class="text-end">${d.delivery_volume.toLocaleString()}</td>
+            <td class="text-end">${d.start_volume.toLocaleString()}</td>
+            <td class="text-end">${d.end_volume.toLocaleString()}</td>
+        </tr>`).join('');
+    } else {
+        delSection.style.display = 'none';
+    }
+
+    // Sales table
+    const salesSection = document.getElementById('salesSection');
+    const salesBody = document.getElementById('salesTableBody');
+    if (data.sales && data.sales.length > 0) {
+        salesSection.style.display = 'block';
+        salesBody.innerHTML = data.sales.map(s => `<tr>
+            <td>${s.grade}</td>
+            <td class="text-end">${(s.transactions || 0).toLocaleString()}</td>
+            <td class="text-end">${s.volume.toLocaleString()}</td>
+            <td class="text-end">$${s.amount.toLocaleString()}</td>
+        </tr>`).join('');
+    } else {
+        salesSection.style.display = 'none';
+    }
+
+    // Alarms section
+    const alarmsSection = document.getElementById('alarmsSection');
+    const alarmsBody = document.getElementById('alarmsTableBody');
+    const alarmStatusContainer = document.getElementById('alarmStatusContainer');
+
+    const hasAlarms = (data.alarms && data.alarms.length > 0) || (data.alarm_status && data.alarm_status.length > 0);
+    if (hasAlarms) {
+        alarmsSection.style.display = 'block';
+
+        // Display active alarm status
+        if (data.alarm_status && data.alarm_status.length > 0) {
+            const activeAlarms = data.alarm_status.filter(s => s.has_active_alarm);
+            if (activeAlarms.length > 0) {
+                alarmStatusContainer.innerHTML = `
+                    <div class="alert alert-danger mb-3">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Active Alarms:</strong>
+                        ${activeAlarms.map(s => `${s.tank_name}: ${s.active_alarms.join(', ')}`).join(' | ')}
+                    </div>
+                `;
+            } else {
+                alarmStatusContainer.innerHTML = `
+                    <div class="alert alert-success mb-3">
+                        <i class="fas fa-check-circle"></i> No active alarms on any tanks
+                    </div>
+                `;
+            }
+        } else {
+            alarmStatusContainer.innerHTML = '';
+        }
+
+        // Display alarm history
+        if (data.alarms && data.alarms.length > 0) {
+            alarmsBody.innerHTML = data.alarms.map(a => {
+                const sevClass = a.severity === 'critical' ? 'text-danger' :
+                                 a.severity === 'warning' ? 'text-warning' : 'text-info';
+                const sevIcon = a.severity === 'critical' ? 'fa-exclamation-circle' :
+                                a.severity === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+                return `<tr>
+                    <td>${a.tank_name || a.tank_id}</td>
+                    <td>${a.alarm_type}</td>
+                    <td>${a.date}</td>
+                    <td class="${sevClass}"><i class="fas ${sevIcon}"></i> ${a.severity}</td>
+                </tr>`;
+            }).join('');
+        } else {
+            alarmsBody.innerHTML = '<tr><td colspan="4" class="text-muted text-center">No alarm history available</td></tr>';
+        }
+    } else {
+        alarmsSection.style.display = 'none';
+    }
+}
+
+function downloadTankCSV() {
+    if (!currentTankData) {
+        alert('No data to download');
+        return;
+    }
+
+    const data = currentTankData;
+    let csv = '';
+
+    // Store header
+    csv += `Store,${data.store_name}\n`;
+    csv += `Date,${new Date().toLocaleDateString()}\n`;
+    csv += `\n`;
+
+    // Inventory section
+    if (data.inventory && data.inventory.length > 0) {
+        csv += 'INVENTORY\n';
+        csv += 'Tank,Product,Volume (gal),Capacity (gal),Fill %,Ullage (gal),Water (in),Temp (F)\n';
+        data.inventory.forEach(t => {
+            csv += `${t.tank_id},${t.product},${t.volume},${t.capacity},${t.fill_percent},${t.ullage},${t.water},${t.temperature}\n`;
+        });
+        csv += '\n';
+    }
+
+    // Reconciliation section
+    if (data.reconciliation && data.reconciliation.length > 0) {
+        csv += 'RECONCILIATION\n';
+        csv += 'Tank,Product,Begin (gal),End (gal),Dispensed (gal),Variance (gal),Variance %\n';
+        data.reconciliation.forEach(r => {
+            csv += `${r.tank_id},${r.product},${r.begin_volume},${r.end_volume},${r.dispensed},${r.variance},${r.variance_percent}\n`;
+        });
+        csv += '\n';
+    }
+
+    // Deliveries section
+    if (data.deliveries && data.deliveries.length > 0) {
+        csv += 'DELIVERIES\n';
+        csv += 'Tank,Product,Date,Time,Volume (gal),Start (gal),End (gal)\n';
+        data.deliveries.forEach(d => {
+            csv += `${d.tank_id},${d.product},${d.date},${d.time || ''},${d.delivery_volume},${d.start_volume},${d.end_volume}\n`;
+        });
+        csv += '\n';
+    }
+
+    // Sales section
+    if (data.sales && data.sales.length > 0) {
+        csv += 'FUEL SALES\n';
+        csv += 'Grade,Transactions,Volume (gal),Amount ($)\n';
+        data.sales.forEach(s => {
+            csv += `${s.grade},${s.transactions || 0},${s.volume},${s.amount}\n`;
+        });
+        csv += '\n';
+    }
+
+    // Alarms section
+    if (data.alarms && data.alarms.length > 0) {
+        csv += 'ALARM HISTORY\n';
+        csv += 'Tank,Alarm Type,Date,Severity\n';
+        data.alarms.forEach(a => {
+            csv += `${a.tank_name || a.tank_id},${a.alarm_type},${a.date},${a.severity}\n`;
+        });
+    }
+
+    // Download
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tank_data_${data.store_name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function printReport() {
+    window.print();
+}
+
+function downloadPDF() {
+    if (!currentStoreIp) return;
+
+    const pdfBtn = document.getElementById('pdf-btn');
+    pdfBtn.disabled = true;
+    pdfBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+
+    const params = new URLSearchParams({
+        commander_ip: currentStoreIp,
+        store_id: currentStoreId || '',
+        format: 'pdf'
+    });
+
+    window.open('/api/tanks/generate?' + params.toString(), '_blank');
+
+    pdfBtn.disabled = false;
+    pdfBtn.innerHTML = '<i class="fas fa-file-pdf"></i> Download PDF';
+}
+
+// ===========================================
+// ANALYSIS TAB FUNCTIONS
+// ===========================================
+function updateAnalysisCharts() {
+    if (!currentTankData) {
+        document.getElementById('analysisNoData').style.display = 'block';
+        document.getElementById('analysisContent').style.display = 'none';
+        return;
+    }
+
+    document.getElementById('analysisNoData').style.display = 'none';
+    document.getElementById('analysisContent').style.display = 'block';
+
+    // Show PDF download bar and report info
+    const pdfBar = document.getElementById('pdf-download-bar');
+    pdfBar.style.display = 'block';
+    document.getElementById('report-store-name').textContent = currentStoreName + ' - Analysis Ready';
+    document.getElementById('report-timestamp').textContent = new Date().toLocaleString();
+
+    // Render analysis directly from currentTankData (already fetched in Query tab)
+    if (currentTankData && currentTankData.inventory) {
+        renderAnalysisData(currentTankData);
+    } else {
+        document.getElementById('analysisSummary').innerHTML = `
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                No tank data loaded. Please query a store from the Query tab first.
+            </div>
+        `;
+    }
+}
+
+function renderAnalysisData(data) {
+    // Support both formats: query API uses 'inventory', analysis API uses 'tanks'
+    const tanks = data.inventory || data.tanks || [];
+    const totalCapacity = tanks.reduce((sum, t) => sum + (t.capacity || 0), 0);
+    const totalVolume = tanks.reduce((sum, t) => sum + (t.volume || 0), 0);
+    const avgFillPct = totalCapacity > 0 ? ((totalVolume / totalCapacity) * 100).toFixed(1) : 0;
+
+    // Summary from query API or calculate from tanks
+    const summary = data.summary || {};
+    const totalDeliveries = summary.delivery_count || (data.deliveries || []).length;
+
+    document.getElementById('analysisSummary').innerHTML = `
+        <div class="stat-card">
+            <div class="stat-label">Store</div>
+            <div class="stat-value" style="font-size: 16px;">${data.store_name || currentStoreName}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Tanks</div>
+            <div class="stat-value">${tanks.length}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Inventory</div>
+            <div class="stat-value">${totalVolume.toLocaleString()} gal</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Avg Fill Level</div>
+            <div class="stat-value">${avgFillPct}%</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Deliveries</div>
+            <div class="stat-value">${totalDeliveries}</div>
+        </div>
+    `;
+
+    // Tank Levels Chart
+    if (analysisCharts.tankLevels) analysisCharts.tankLevels.destroy();
+    if (tanks.length > 0) {
+        const tankCtx = document.getElementById('tankLevelsChart').getContext('2d');
+        analysisCharts.tankLevels = new Chart(tankCtx, {
+            type: 'bar',
+            data: {
+                labels: tanks.map(t => t.product || `Tank ${t.tank_id}`),
+                datasets: [{
+                    label: 'Fill %',
+                    data: tanks.map(t => t.fill_percent || (t.capacity > 0 ? ((t.volume / t.capacity) * 100).toFixed(1) : 0)),
+                    backgroundColor: tanks.map(t => {
+                        const pct = t.fill_percent || (t.capacity > 0 ? (t.volume / t.capacity) * 100 : 0);
+                        return pct < 20 ? '#dc3545' : pct < 40 ? '#ffc107' : '#28a745';
+                    })
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, max: 100, title: { display: true, text: 'Fill %' } } }
+            }
+        });
+    }
+
+    // Fuel Sales Chart
+    if (analysisCharts.fuelSales) analysisCharts.fuelSales.destroy();
+    const salesData = data.sales || [];
+    if (salesData.length > 0) {
+        const salesCtx = document.getElementById('fuelSalesChart').getContext('2d');
+        analysisCharts.fuelSales = new Chart(salesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: salesData.map(s => s.grade),
+                datasets: [{
+                    data: salesData.map(s => s.volume),
+                    backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#6c757d', '#fd7e14']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    // Tank Inventory Table
+    let tankHtml = '';
+    if (tanks.length > 0) {
+        tankHtml = '<table class="table table-sm table-bordered mb-0"><thead><tr><th>Tank</th><th>Product</th><th>Volume</th><th>Capacity</th><th>Fill %</th></tr></thead><tbody>';
+        tanks.forEach(t => {
+            const pct = t.fill_percent || (t.capacity > 0 ? ((t.volume / t.capacity) * 100).toFixed(1) : 0);
+            const pctClass = pct < 20 ? 'text-danger' : pct < 40 ? 'text-warning' : 'text-success';
+            tankHtml += `<tr>
+                <td>${t.tank_id}</td>
+                <td>${t.product || '-'}</td>
+                <td>${(t.volume || 0).toLocaleString()} gal</td>
+                <td>${(t.capacity || 0).toLocaleString()} gal</td>
+                <td class="${pctClass}">${pct}%</td>
+            </tr>`;
+        });
+        tankHtml += '</tbody></table>';
+    } else {
+        tankHtml = '<p class="text-muted mb-0">No tank inventory data</p>';
+    }
+    document.getElementById('tankInventoryTable').innerHTML = tankHtml;
+
+    // Deliveries Table
+    const deliveries = data.deliveries || [];
+    let delHtml = '';
+    if (deliveries.length > 0) {
+        delHtml = '<table class="table table-sm table-bordered mb-0"><thead><tr><th>Date</th><th>Product</th><th>Volume</th></tr></thead><tbody>';
+        deliveries.slice(0, 10).forEach(d => {
+            const dateStr = d.date || d.delivery_date || '-';
+            const volume = d.delivery_volume || d.volume || 0;
+            delHtml += `<tr><td>${dateStr}</td><td>${d.product || d.tank_id || '-'}</td><td>${volume.toLocaleString()} gal</td></tr>`;
+        });
+        delHtml += '</tbody></table>';
+    } else {
+        delHtml = '<p class="text-muted mb-0">No recent deliveries</p>';
+    }
+    document.getElementById('deliveriesTable').innerHTML = delHtml;
+
+    // Alarms Table (only from analysis API)
+    const alarms = data.alarms || [];
+    let alarmHtml = '';
+    if (alarms.length > 0) {
+        alarmHtml = '<table class="table table-sm table-bordered mb-0"><thead><tr><th>Severity</th><th>Tank</th><th>Alarm</th><th>Date</th></tr></thead><tbody>';
+        alarms.forEach(a => {
+            const severity = (a.severity || 'unknown').toLowerCase();
+            let severityBadge = '<span class="badge bg-secondary">Unknown</span>';
+            if (severity === 'critical' || severity === 'high') {
+                severityBadge = '<span class="badge bg-danger">Critical</span>';
+            } else if (severity === 'warning' || severity === 'medium') {
+                severityBadge = '<span class="badge bg-warning text-dark">Warning</span>';
+            } else if (severity === 'info' || severity === 'low') {
+                severityBadge = '<span class="badge bg-info">Info</span>';
+            }
+            alarmHtml += `<tr><td>${severityBadge}</td><td>${a.tank_name || a.tank_id || '-'}</td><td>${a.alarm_type || '-'}</td><td>${a.date || '-'}</td></tr>`;
+        });
+        alarmHtml += '</tbody></table>';
+    } else {
+        alarmHtml = '<p class="text-muted mb-0"><i class="fas fa-check-circle text-success"></i> No alarms</p>';
+    }
+    document.getElementById('alarmsTable').innerHTML = alarmHtml;
+}
+
+// Update Query tab dropdown with TLS status
+function updateQueryDropdownWithStatus(statusData) {
+    const select = document.getElementById('queryStoreSelect');
+    if (!select || !statusData || !statusData.stores) return;
+
+    // Build a map of IP -> status info
+    const statusMap = {};
+    statusData.stores.forEach(store => {
+        statusMap[store.ip] = {
+            status: store.tls_status,
+            tankCount: store.tank_count || 0
+        };
+    });
+
+    // Update each option with status indicator
+    Array.from(select.options).forEach(option => {
+        if (!option.value) return; // Skip placeholder
+
+        const ip = option.value;
+        const info = statusMap[ip];
+        const storeName = option.dataset.store || option.text.split(' (')[0];
+
+        if (info) {
+            let statusIcon = '';
+            let statusText = '';
+            if (info.status === 'online') {
+                statusIcon = '\u{1F7E2}'; // Green circle
+                statusText = ` [TLS: ${info.tankCount} tank${info.tankCount !== 1 ? 's' : ''}]`;
+            } else if (info.status === 'no_tls') {
+                statusIcon = '\u{1F7E1}'; // Yellow circle
+                statusText = ' [No TLS]';
+            } else {
+                statusIcon = '\u{1F534}'; // Red circle
+                statusText = ' [Offline]';
+            }
+            option.text = `${statusIcon} ${storeName} (${ip})${statusText}`;
+        }
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('queryDate').valueAsDate = new Date();
+
+    // Auto-load fleet status for Overview tab (will also populate dropdown)
+    refreshTLSStatus(false);
+});
+</script>
+{% endblock %}

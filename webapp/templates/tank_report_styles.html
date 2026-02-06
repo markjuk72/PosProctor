@@ -1,0 +1,204 @@
+<style>
+    .report-header {
+        background: linear-gradient(135deg, #008B8B 0%, #20B2AA 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+    }
+
+    .metric-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .metric-value {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: #008B8B;
+    }
+
+    .metric-label {
+        color: #666;
+        font-size: 0.85em;
+        text-transform: uppercase;
+    }
+
+    .fuel-row {
+        padding: 15px;
+        margin: 10px 0;
+        background: #f8f9fa;
+        border-left: 4px solid;
+        border-radius: 4px;
+    }
+
+    .fuel-unl, .fuel-unlead { border-left-color: #2ecc71; }
+    .fuel-dsl, .fuel-diesel, .fuel-dsl1 { border-left-color: #3498db; }
+    .fuel-prm, .fuel-prem { border-left-color: #e74c3c; }
+    .fuel-mid { border-left-color: #e67e22; }
+
+    .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+        font-style: italic;
+    }
+
+    .section-title {
+        color: #008B8B;
+        border-bottom: 2px solid #008B8B;
+        padding-bottom: 10px;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        font-size: 1.3em;
+    }
+
+    .debug-section {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 20px;
+        font-family: monospace;
+        font-size: 0.85em;
+    }
+
+    .tank-gauge {
+        position: relative;
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 5px;
+    }
+
+    .tank-gauge-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    .gauge-good { background: linear-gradient(90deg, #27ae60, #2ecc71); }
+    .gauge-warning { background: linear-gradient(90deg, #f39c12, #e67e22); }
+    .gauge-critical { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+
+    /* Chart container styles */
+    .chart-container {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .chart-title {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+        font-size: 1.1em;
+    }
+
+    /* Alarm styling */
+    .alarm-card {
+        padding: 12px 15px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .alarm-critical { background: #fee2e2; border-left: 4px solid #ef4444; }
+    .alarm-warning { background: #fef3c7; border-left: 4px solid #f59e0b; }
+    .alarm-info { background: #e0f2fe; border-left: 4px solid #3b82f6; }
+    .alarm-clear { background: #d1fae5; border-left: 4px solid #10b981; }
+
+    .alarm-status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75em;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .badge-critical { background: #ef4444; color: white; }
+    .badge-warning { background: #f59e0b; color: white; }
+    .badge-info { background: #3b82f6; color: white; }
+    .badge-clear { background: #10b981; color: white; }
+
+    /* Delivery table styling */
+    .delivery-row {
+        padding: 10px 15px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        background: #f8f9fa;
+    }
+
+    .delivery-amount {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #008B8B;
+    }
+
+    /* Reconciliation styling */
+    .variance-positive { color: #10b981; font-weight: 600; }
+    .variance-negative { color: #ef4444; font-weight: 600; }
+    .variance-neutral { color: #6b7280; }
+
+    /* Summary cards */
+    .summary-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .summary-card.deliveries { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+    .summary-card.alarms { background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%); }
+    .summary-card.reconciliation { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+
+    .summary-value {
+        font-size: 2.5em;
+        font-weight: bold;
+        line-height: 1;
+    }
+
+    .summary-label {
+        font-size: 0.9em;
+        opacity: 0.9;
+        margin-top: 5px;
+    }
+
+    /* Progress bars for deliveries */
+    .delivery-progress {
+        height: 25px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 5px 0;
+    }
+
+    .delivery-progress-bar {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 500;
+        font-size: 0.85em;
+        transition: width 0.5s ease;
+    }
+
+    @media print {
+        .no-print { display: none !important; }
+        .report-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .summary-card, .alarm-card, .chart-container { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .page-break { page-break-before: always; }
+    }
+</style>

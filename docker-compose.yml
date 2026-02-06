@@ -1,0 +1,354 @@
+
+services:
+  # ============================================
+  # Nginx Reverse Proxy (Single Entry Point)
+  # ============================================
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: posproctor-nginx
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/ssl:/etc/nginx/ssl:ro
+      - ./data/nginx_logs:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    networks:
+      - posproctor-net
+    depends_on:
+      - webapp
+      - monitoring
+      - tlog
+      - grafana
+      - prometheus
+
+
+  # ============================================
+  # Bitwarden Service (Password Management)
+  # ============================================
+  bitwarden-serve:
+    build:
+      context: ./bitwarden-serve
+      dockerfile: Dockerfile
+    container_name: posproctor-bitwarden
+    volumes:
+      - ./data/bitwarden:/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - BW_CLIENTID=${BW_CLIENTID}
+      - BW_CLIENTSECRET=${BW_CLIENTSECRET}
+      - BW_PASSWORD=${BW_PASSWORD}
+      - BW_SERVER=${BW_SERVER:-https://vault.bitwarden.com}
+      - BW_SERVE_HOSTNAME=0.0.0.0
+    expose:
+      - "8087"
+    restart: unless-stopped
+    networks:
+      - posproctor-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8087/sync"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================
+  # Monitoring Service (Verifone API Polling)
+  # ============================================
+  monitoring:
+    build:
+      context: ./monitoring
+      dockerfile: Dockerfile
+    container_name: posproctor-monitoring
+    volumes:
+      - ./data/database:/app/data/database
+      - ./data/xml_debug:/app/data/xml_debug
+    environment:
+      - PYTHONUNBUFFERED=1
+      - POSPROCTOR_DB_PATH=${POSPROCTOR_DB_PATH:-/app/data/database/posproctor.db}
+      # Bitwarden credential service
+      - BITWARDEN_URL=http://bitwarden-serve:8087
+      # Commander credentials (fallback if Bitwarden unavailable)
+      - COMMANDER_USERNAME=${COMMANDER_USERNAME}
+      - COMMANDER_PASSWORD=${COMMANDER_PASSWORD}
+      - POLL_INTERVAL=${POLL_INTERVAL:-300}
+      - WORKER_THREADS=${WORKER_THREADS:-10}
+      - REQUEST_TIMEOUT=${REQUEST_TIMEOUT:-30}
+      - XML_DEBUG_ENABLED=${XML_DEBUG_ENABLED:-false}
+      - XML_DEBUG_RETENTION_MINUTES=${XML_DEBUG_RETENTION_MINUTES:-60}
+      - XML_DEBUG_PATH=${XML_DEBUG_PATH:-/app/data/xml_debug}
+      - DEV_MODE=${DEV_MODE:-false}
+      - DEV_STORE_FILTER=${DEV_STORE_FILTER:-}
+    # Port exposed internally only (accessed via nginx)
+    expose:
+      - "8000"
+    restart: unless-stopped
+    networks:
+      - posproctor-net
+    depends_on:
+      - bitwarden-serve
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ============================================
+  # TLOG Service (Transaction Log Management)
+  # ============================================
+  tlog:
+    build:
+      context: ./tlog
+      dockerfile: Dockerfile
+    container_name: posproctor-tlog
+    volumes:
+      - ./data/database:/app/data/database
+      - ./data/tlogs:/app/data/tlogs
+    environment:
+      - PYTHONUNBUFFERED=1
+      - POSPROCTOR_DB_PATH=${POSPROCTOR_DB_PATH:-/app/data/database/posproctor.db}
+      # Bitwarden credential service
+      - BITWARDEN_URL=http://bitwarden-serve:8087
+      # Commander credentials (fallback if Bitwarden unavailable)
+      - COMMANDER_USERNAME=${COMMANDER_USERNAME}
+      - COMMANDER_PASSWORD=${COMMANDER_PASSWORD}
+      - TLOG_API_KEY=${TLOG_API_KEY}
+      - TLOG_RETENTION_DAYS=${TLOG_RETENTION_DAYS:-90}
+      - TLOG_STORAGE_PATH=${TLOG_STORAGE_PATH:-/app/data/tlogs}
+    # Port exposed internally only (accessed via nginx)
+    expose:
+      - "8001"
+    restart: unless-stopped
+    networks:
+      - posproctor-net
+    depends_on:
+      - monitoring
+      - bitwarden-serve
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ============================================
+  # Web UI (Configuration & TLOG Viewer)
+  # ============================================
+  webapp:
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile
+    container_name: posproctor-webapp
+    volumes:
+      - ./data/database:/app/data/database
+      - ./data/tlogs:/app/data/tlogs
+      - ./data/xml_debug:/app/data/xml_debug
+
+      - ./data/tank_reports:/app/data/tank_reports
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - FLASK_ENV=production
+      - POSPROCTOR_DB_PATH=${POSPROCTOR_DB_PATH:-/app/data/database/posproctor.db}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
+      # Bitwarden credential service
+      - BITWARDEN_URL=http://bitwarden-serve:8087
+      # Authentication
+      - AUTH_ENABLED=${AUTH_ENABLED:-false}
+      - AUTH_TYPE=${AUTH_TYPE:-local}
+      - LOCAL_USERNAME=${LOCAL_USERNAME:-admin}
+      - LOCAL_PASSWORD=${LOCAL_PASSWORD:-changeme}
+      - ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID}
+      - ENTRA_CLIENT_SECRET=${ENTRA_CLIENT_SECRET}
+      - ENTRA_TENANT_ID=${ENTRA_TENANT_ID}
+      - ENTRA_REDIRECT_URI=${ENTRA_REDIRECT_URI}
+      # TLOG Service
+      - TLOG_SERVICE_URL=http://tlog:8001
+      - TLOG_API_KEY=${TLOG_API_KEY}
+      # Monitoring Service
+      - MONITORING_SERVICE_URL=http://monitoring:8000
+      # Commander Credentials (fallback if Bitwarden unavailable)
+      - COMMANDER_USERNAME=${COMMANDER_USERNAME}
+      - COMMANDER_PASSWORD=${COMMANDER_PASSWORD}
+      # XML Debug
+      - XML_DEBUG_PATH=${XML_DEBUG_PATH:-/app/data/xml_debug}
+      # Tank Reports
+      - TANK_REPORTS_PATH=${TANK_REPORTS_PATH:-/app/data/tank_reports}
+    # Port exposed internally only (accessed via nginx)
+    expose:
+      - "5000"
+    restart: unless-stopped
+    networks:
+      - posproctor-net
+    depends_on:
+      - monitoring
+      - tlog
+      - bitwarden-serve
+
+  # ============================================
+  # Prometheus (Metrics Storage)
+  # ============================================
+  prometheus:
+    image: prom/prometheus:v2.53.1
+    container_name: posproctor-prometheus
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./data/prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    # Port exposed internally only (accessed via nginx)
+    expose:
+      - "9090"
+    restart: unless-stopped
+    user: "1000"
+    networks:
+      - posproctor-net
+
+  # ============================================
+  # Loki (Log Aggregation)
+  # ============================================
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: posproctor-loki
+    volumes:
+      - ./config/loki-config.yaml:/etc/loki/config.yaml
+      - ./data/loki:/loki
+    command: -config.file=/etc/loki/config.yaml
+    # Port exposed for native Vector on Windows to connect
+    ports:
+      - "3100:3100"
+    restart: unless-stopped
+    networks:
+      - posproctor-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ============================================
+  # Vector (Syslog Collection)
+  # ============================================
+  # NOTE: On Windows Docker Desktop, Vector should run natively to preserve
+  # syslog source IPs. The Docker NAT layer masks all UDP source IPs.
+  # See config/vector-windows.yaml for the native Windows configuration.
+  # Uncomment this section if running on Linux:
+  # vector:
+  #   image: timberio/vector:0.39.0-alpine
+  #   container_name: posproctor-vector
+  #   volumes:
+  #     - ./config/vector-config.yaml:/etc/vector/vector.yaml:ro
+  #     - ./data/database:/app/data/database:ro
+  #   command: --config /etc/vector/vector.yaml
+  #   ports:
+  #     - "514:514/udp"
+  #   restart: unless-stopped
+  #   networks:
+  #     - posproctor-net
+  #   depends_on:
+  #     loki:
+  #       condition: service_healthy
+
+  # ============================================
+  # Grafana (Visualization & Alerting)
+  # ============================================
+  grafana:
+    image: grafana/grafana:12.0.0
+    container_name: posproctor-grafana
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./data/grafana:/var/lib/grafana
+      - ./config/ssl:/etc/ssl/grafana:ro
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin123}
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/posproctor_monitor.json
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s:%(http_port)s/
+      - GF_ORG_NAME=POSProctor
+      # HTTPS Configuration
+      - GF_SERVER_PROTOCOL=https
+      - GF_SERVER_CERT_FILE=/etc/ssl/grafana/cert.pem
+      - GF_SERVER_CERT_KEY=/etc/ssl/grafana/key.pem
+      # SMTP Configuration
+      - GF_SMTP_ENABLED=${SMTP_ENABLED:-false}
+      - GF_SMTP_HOST=${SMTP_HOST:-smtp.gmail.com:587}
+      - GF_SMTP_USER=${SMTP_USER}
+      - GF_SMTP_PASSWORD=${SMTP_PASSWORD}
+      - GF_SMTP_FROM_ADDRESS=${SMTP_FROM}
+      - GF_SMTP_FROM_NAME=${SMTP_FROM_NAME:-POSProctor Alert System}
+      - ALERT_EMAIL=${ALERT_EMAIL}
+      - GF_LOG_FILTERS=alerting.notifier:debug
+    # Port exposed for direct access (now serving HTTPS)
+    ports:
+      - "3000:3000"
+    user: "1000"
+    restart: unless-stopped
+    networks:
+      - posproctor-net
+    depends_on:
+      - prometheus
+      - loki
+
+  # ============================================
+  # Node Exporter (System Metrics)
+  # ============================================
+  node_exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: posproctor-node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    networks:
+      - posproctor-net
+
+  # ============================================
+  # MCP Server (AI Integration)
+  # ============================================
+  mcp-server:
+    build:
+      context: ./mcp-server
+      dockerfile: Dockerfile
+    container_name: posproctor-mcp
+    volumes:
+      - ./data/database:/app/data/database:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - POSPROCTOR_DB_PATH=/app/data/database/posproctor.db
+      - PROMETHEUS_URL=http://prometheus:9090
+      - LOKI_URL=http://loki:3100
+      - MCP_PORT=8002
+    expose:
+      - "8002"
+    restart: unless-stopped
+    networks:
+      - posproctor-net
+    depends_on:
+      - prometheus
+      - loki
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+networks:
+  posproctor-net:
+    driver: bridge
+    name: posproctor-net

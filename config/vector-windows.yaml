@@ -1,0 +1,75 @@
+# Vector Configuration for Native Windows Installation
+# This config runs Vector natively on Windows to preserve syslog source IPs
+# which are lost when running through Docker Desktop's NAT
+
+# Enrichment Tables
+# CSV is exported from SQLite database by posproctor webapp
+enrichment_tables:
+  store_mapping:
+    type: file
+    file:
+      path: "C:\\path\\to\\posproctor\\data\\database\\commanders.csv"
+      encoding:
+        type: csv
+    schema:
+      ip: string
+      store: string
+    index:
+      ip: exact
+
+# Sources
+sources:
+  syslog_udp:
+    type: syslog
+    address: 0.0.0.0:514
+    mode: udp
+    max_length: 102400
+
+# Transforms
+transforms:
+  relabel_nat_ip:
+    type: remap
+    inputs:
+      - syslog_udp
+    source: |
+      # Vector's syslog source provides .source_ip with the actual UDP sender IP
+      .nat_ip = .source_ip
+      del(.source_ip)
+      del(.timestamp)
+
+  enrich_pos_name:
+    type: remap
+    inputs:
+      - relabel_nat_ip
+    source: |
+      # Look up the store name from the enrichment table using nat_ip
+      .enriched_data, err = get_enrichment_table_record("store_mapping", {"ip": .nat_ip})
+      # Set pos_name to the store name if found, otherwise "unknown"
+      .pos_name = .enriched_data.store || "unknown"
+      .category = "security"
+
+# Sinks
+sinks:
+  loki:
+    type: loki
+    inputs:
+      - enrich_pos_name
+    # Connect to Loki running in Docker (exposed on localhost:3100)
+    endpoint: http://localhost:3100
+    encoding:
+      codec: text
+    labels:
+      cluster: "docker-compose"
+      source: "syslog"
+      protocol: "udp"
+      nat_ip: "{{ nat_ip }}"
+      pos_name: "{{ pos_name }}"
+      category: "{{ category }}"
+
+  # Also log to console for debugging
+  console:
+    type: console
+    inputs:
+      - enrich_pos_name
+    encoding:
+      codec: json

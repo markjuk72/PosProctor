@@ -1,0 +1,22 @@
+apiVersion: 1
+contactPoints:
+- orgId: 1
+  name: email-alerts
+  receivers:
+  - uid: email-receiver
+    type: email
+    settings:
+      addresses: ${ALERT_EMAIL}
+      subject: '{{ .Status | toUpper }}: {{ .CommonLabels.store }} - {{ .GroupLabels.alertname
+        }}'
+      message: "{{ range .Alerts -}}\n\U0001F6A8 {{ .Labels.store }} ({{ .Labels.group\
+        \ }}) - {{ .Labels.alertname }}\n\n\U0001F4CD **Location:** {{ .Labels.store\
+        \ }}, {{ .Labels.group }}\n\U0001F310 **Commander IP:** {{ .Labels.ip }}\n\
+        {{- if .Labels.fueling_point_id }}\n\u26FD **Pump/DCR:** {{ .Labels.fueling_point_id\
+        \ }}\n{{- end }}\n{{- if .Labels.display_id }}\n\U0001F5A5\uFE0F **Display:**\
+        \ {{ .Labels.display_id }}\n{{- end }}\n\u23F0 **Alert Time:** {{ .StartsAt.Format\
+        \ \"Jan 02, 2006 at 3:04 PM\" }}\n\U0001F534 **Severity:** {{ .Labels.severity\
+        \ }}\n\n\U0001F517 **Actions:**\n\u2022 [Open Commander UI](https://{{ .Labels.ip\
+        \ }}/ConfigClient.html)\n\u2022 [View in Grafana]({{ .GeneratorURL }})\n\n\
+        ---\n{{ end }}\n"
+    disableResolveMessage: true

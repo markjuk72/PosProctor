@@ -1,0 +1,350 @@
+
+{
+  "version": "1.0",
+  "jurisdictions": ["ID","WY","MT","UT","CO","AZ","NM"],
+  "baseline_regulation": {
+    "name": "EPA UST",
+    "citation": "40 CFR Part 280",
+    "source_urls": ["https://www.epa.gov/ust/underground-storage-tanks-laws-and-regulations"]
+  },
+  "reports": [
+    {
+      "id": "monthly_release_detection",
+      "name": "Monthly Release Detection Report",
+      "description": "Evidence of leak detection for tanks and piping via ATG static tests, interstitial monitoring, SIR, or approved method.",
+      "frequency": "monthly",
+      "trigger": "Required for all active regulated UST systems",
+      "min_fields": [
+        "facility_id","tank_id","method","test_date",
+        "result_status","measured_leak_rate_gph","sensor_status",
+        "piping_method","operator_id","attachments"
+      ],
+      "retention_months": 12,
+      "jurisdiction_notes": {
+        "CO": "Submit within Annual Compliance Package summary; keep 12 months on file. (OPS)",
+        "MT": "Monthly walkthrough form must include release detection checks. (ARM 17.56)",
+        "AZ": "Monthly LD plus plan/recordkeeping per ADEQ updates (2020)."
+      },
+      "citations": [
+        {"federal":"40 CFR 280.40-280.45"},
+        {"CO":"OPS UST Operation Guidance"},
+        {"MT":"DEQ Rule Changes Brochure (Monthly walk-through)"},
+        {"AZ":"ADEQ UST Rules Updates Summary"}
+      ]
+    },
+    {
+      "id": "monthly_walkthrough_inspection",
+      "name": "Monthly Walkthrough Inspection Checklist",
+      "description": "Visual inspection of spill buckets, fill pipes, release detection equipment; record anomalies.",
+      "frequency": "monthly",
+      "trigger": "State-mandated in MT/CO; recommended/required elsewhere under EPA walk-through provisions adopted by states.",
+      "min_fields": [
+        "facility_id","date","spill_bucket_condition",
+        "fill_cap_secure","udc_status","sumps_liquid_present",
+        "sensor_checks","corrective_actions","inspector_id"
+      ],
+      "retention_months": 12,
+      "jurisdiction_notes": {
+        "MT": "Mandatory monthly; annual sump check also required. (ARM 17.56)",
+        "CO": "Monthly compliance inspections recommended/recorded; reviewed annually.",
+        "ID": "Triennial DEQ inspection will review walk-through records."
+      },
+      "citations": [
+        {"MT":"DEQ Rule Changes Brochure; July 2022 MUST News"},
+        {"CO":"OPS UST Operation Guidance"}
+      ]
+    },
+    {
+      "id": "atg_static_leak_test",
+      "name": "ATG Static Leak Test Result",
+      "description": "Static tank tightness test (e.g., 0.2 gph monthly or 0.1 gph as configured) from Veeder-Root ATG.",
+      "frequency": "monthly",
+      "trigger": "If ATG is primary tank release detection method.",
+      "min_fields": [
+        "facility_id","tank_id","test_date","test_window_hours",
+        "leak_rate_gph","result_status","console_model","firmware","operator_id","printout"
+      ],
+      "retention_months": 12,
+      "jurisdiction_notes": {
+        "MT": "Maintain last 12 months of passing ATG tests; annual ATG functionality test required.",
+        "CO": "Provide test summaries in Annual Compliance Package.",
+        "ID/WY/AZ/NM/UT": "Maintain monthly results for inspector review."
+      },
+      "citations": [
+        {"federal":"40 CFR 280.43"},
+        {"MT":"July 2022 MUST News"},
+        {"CO":"NISTM: Colorado Annual Compliance Package"}
+      ]
+    },
+    {
+      "id": "interstitial_monitoring_log",
+      "name": "Interstitial Monitoring Log",
+      "description": "30-day check of double-walled tank/piping sensors or vacuum/brine levels.",
+      "frequency": "monthly",
+      "trigger": "Required when secondary containment with interstitial monitoring is used.",
+      "min_fields": [
+        "facility_id","asset_type","asset_id","monitor_type",
+        "reading_date","status","alarm_events","corrective_actions","operator_id"
+      ],
+      "retention_months": 12,
+      "jurisdiction_notes": {
+        "MT": "Record monthly sensor status and annual sensor operability test.",
+        "AZ": "Secondary containment mandated post-2009 installs/replacements.",
+        "UT": "New USTs require interstitial monitoring; report via approved forms."
+      },
+      "citations": [
+        {"federal":"40 CFR 280.43(g)"},
+        {"MT":"DEQ Rule Changes Brochure"},
+        {"AZ":"ADEQ UST Rules Updates"},
+        {"UT":"Utah Admin. Code R311-203-5"}
+      ]
+    },
+    {
+      "id": "line_leak_detection_test",
+      "name": "Pressurized Line Leak Detection Test",
+      "description": "Annual 3.0 gph test; optional 0.1/0.2 gph performance verification if applicable.",
+      "frequency": "annual",
+      "trigger": "Pressurized piping with electronic/mechanical leak detectors.",
+      "min_fields": [
+        "facility_id","line_id","test_date",
+        "test_threshold_gph","pass_fail","device_model","setpoints",
+        "shutdown_events","tester_id","attachments"
+      ],
+      "retention_months": 36,
+      "jurisdiction_notes": {
+        "CO": "ATG tapes must specify line tested and threshold; include in Annual Compliance Package.",
+        "MT": "Single-wall pressurized lines require annual line tightness testing.",
+        "UT": "Line leak detector functionality tests required for Certificate."
+      },
+      "citations": [
+        {"federal":"40 CFR 280.44"},
+        {"CO":"NISTM Colorado Annual Compliance Package"},
+        {"MT":"July 2022 MUST News"},
+        {"UT":"Certificate of Compliance guidance"}
+      ]
+    },
+    {
+      "id": "spill_bucket_tightness_test",
+      "name": "Spill Bucket Tightness / Integrity Test",
+      "description": "Hydrostatic or vacuum integrity test for spill containment devices.",
+      "frequency": "every_3_years",
+      "trigger": "Required under EPA revisions; adopted by states with local specifics.",
+      "min_fields": [
+        "facility_id","bucket_id","test_date","method",
+        "result_status","repair_actions","tester_id","attachments"
+      ],
+      "retention_months": 36,
+      "jurisdiction_notes": {
+        "MT": "3‑year tightness test; double-wall buckets may use 30‑day interstice logs in lieu of test.",
+        "AZ": "Inspect at install and every 3 years thereafter.",
+        "UT": "Report on Utah forms (PEI RP1200 references)."
+      },
+      "citations": [
+        {"federal":"40 CFR 280.35"},
+        {"MT":"DEQ Rule Changes Brochure"},
+        {"AZ":"ADEQ UST Rules Updates"},
+        {"UT":"Utah Admin. Code R311-203-5"}
+      ]
+    },
+    {
+      "id": "overfill_prevention_inspection",
+      "name": "Overfill Prevention Device Functionality Inspection",
+      "description": "Functional inspection of shutoff valves/alarms; ball float valves generally disallowed for replacements.",
+      "frequency": "every_3_years",
+      "trigger": "All USTs with overfill prevention.",
+      "min_fields": [
+        "facility_id","device_id","inspection_date",
+        "device_type","set_level_percent","pass_fail",
+        "repairs","inspector_id","attachments"
+      ],
+      "retention_months": 36,
+      "jurisdiction_notes": {
+        "AZ": "Initial test by 03/01/2020; 3‑year cycle thereafter; ball floats not acceptable for new/replacement.",
+        "CA_like_practice":"(Reference style) Notify local agency before testing—varies by state.",
+        "ID/WY/MT/UT/CO/NM":"Follow EPA cycle; state program may require specific forms."
+      },
+      "citations": [
+        {"federal":"40 CFR 280.35"},
+        {"AZ":"ADEQ UST Rules Updates"}
+      ]
+    },
+    {
+      "id": "containment_sump_integrity_test",
+      "name": "Containment/UDC Sump Integrity Test",
+      "description": "Integrity/tightness test of sumps used for interstitial monitoring or UDC.",
+      "frequency": "every_3_years",
+      "trigger": "Where interstitial monitoring relies on sump containment.",
+      "min_fields": [
+        "facility_id","sump_id","test_date","method",
+        "result_status","sensor_location_verified","tester_id","attachments"
+      ],
+      "retention_months": 36,
+      "jurisdiction_notes": {
+        "UT": "Annual tightness if sump sensor used as automatic line leak detector.",
+        "CO": "Include in 3‑year compliance; annual visual checks documented.",
+        "MT": "Annual sump check (visual) plus 3‑year integrity test where IM is primary."
+      },
+      "citations": [
+        {"federal":"40 CFR 280.35(a)(1)(ii)"},
+        {"UT":"Utah Admin. Code R311-203-5"},
+        {"CO":"OPS UST Operation Guidance"},
+        {"MT":"DEQ Rule Changes Brochure"}
+      ]
+    },
+    {
+      "id": "cathodic_protection_test",
+      "name": "Cathodic Protection Test & Rectifier Readings",
+      "description": "CP system test results and periodic rectifier readings for impressed-current systems.",
+      "frequency": "every_3_years_test; bi_monthly_rectifier_readings",
+      "trigger": "Metal tanks/piping with CP.",
+      "min_fields": [
+        "facility_id","asset_id","cp_test_date",
+        "criteria_met","test_values","rectifier_readings",
+        "corrective_actions","tester_id","attachments"
+      ],
+      "retention_months": 36,
+      "jurisdiction_notes": {
+        "CO": "3‑year CP test results + rectifier logs (≥every two months) in Annual Compliance Package.",
+        "WY/ID/MT/AZ/NM/UT": "Follow EPA criteria; retain tests and readings per state guidance."
+      },
+      "citations": [
+        {"federal":"40 CFR 280.31"},
+        {"CO":"NISTM CO Annual Compliance Package"}
+      ]
+    },
+    {
+      "id": "annual_atg_functionality_test",
+      "name": "Annual ATG/Probe Functionality Test",
+      "description": "Verification that ATG/probes operate per manufacturer/EPA performance.",
+      "frequency": "annual",
+      "trigger": "All facilities using ATG for release detection.",
+      "min_fields": [
+        "facility_id","device_id","test_date",
+        "procedures","pass_fail","calibration",
+        "firmware_version","tester_id","attachments"
+      ],
+      "retention_months": 36,
+      "jurisdiction_notes": {
+        "MT": "Explicitly required; maintain annual ATG functionality test reports.",
+        "CO": "Include in Annual Compliance Package."
+      },
+      "citations": [
+        {"MT":"DEQ Rule Changes Brochure; MUST News"},
+        {"CO":"NISTM CO Annual Compliance Package"}
+      ]
+    },
+    {
+      "id": "release_notification_report",
+      "name": "Release / Suspected Release Notification",
+      "description": "24‑hour report to state when alarms, failed tests, product loss, liquids in interstice/sumps, or visual indicators suggest a release.",
+      "frequency": "event_driven_within_24_hours",
+      "trigger": "Any alarm/indicator meeting state criteria.",
+      "min_fields": [
+        "facility_id","event_time","event_type",
+        "indicator_source","immediate_actions","fire_explosion_hazards",
+        "regulator_contacted","ticket_id","follow_up_plan","attachments"
+      ],
+      "retention_months": 60,
+      "jurisdiction_notes": {
+        "ID":"Notify DEQ within 24 hrs; initial response actions required.",
+        "MT":"ARM 17.56.502 requires 24‑hr reporting for specified conditions.",
+        "NM":"Notify per 20.5.107.700 and 20.5.118 NMAC."
+      },
+      "citations": [
+        {"ID":"Idaho DEQ UST Rules & Notifications"},
+        {"MT":"Mont. Admin. R. 17.56.502"},
+        {"NM":"NMAC 20.5.107.700"}
+      ]
+    },
+    {
+      "id": "installation_modification_notification",
+      "name": "Installation / Modification / Closure Notification",
+      "description": "Advance notice and post‑work documentation for new tanks, piping changes, closures.",
+      "frequency": "event_driven",
+      "trigger": "Install/modify/close USTs or switch to higher biofuel blends.",
+      "min_fields": [
+        "facility_id","project_type","planned_date",
+        "contractor_license","as_built_drawings","test_results",
+        "compatibility_docs","regulator_acknowledgement","attachments"
+      ],
+      "retention_months": 60,
+      "jurisdiction_notes": {
+        "ID":"30‑day prior notice; 24 hr prior for certain piping; compatibility notice for >E10/>B20.",
+        "UT":"Certificate of Compliance requires notifications, tests, as‑builts.",
+        "AZ":"Plan review process; 30‑day biofuel compatibility notice."
+      },
+      "citations": [
+        {"ID":"Idaho DEQ UST Rules & Notifications"},
+        {"UT":"Certificate of Compliance guidance"},
+        {"AZ":"ADEQ UST Rules Updates"}
+      ]
+    },
+    {
+      "id": "operator_training_records",
+      "name": "Operator Training & Authorization Records (A/B/C)",
+      "description": "Proof of Class A/B/C training, reauthorization cycles, and facility assignment.",
+      "frequency": "upon_change_and_periodic",
+      "trigger": "Designation changes, periodic reauthorization as required by state.",
+      "min_fields": [
+        "facility_id","operator_class","operator_id",
+        "authorization_date","expiration_date","training_provider",
+        "assignments","attachments"
+      ],
+      "retention_months": 60,
+      "jurisdiction_notes": {
+        "MT":"Maintain A/B/C; verify prior to inspection.",
+        "NY_example":"(Outside scope) 5‑year reauth; included for parity; states may vary.",
+        "AZ/UT/CO/NM/ID/WY":"Maintain certificates per state program."
+      },
+      "citations": [
+        {"MT":"MUST News (operator requirements)"},
+        {"AZ":"ADEQ Compliance (inspection review of operator records)"}
+      ]
+    },
+    {
+      "id": "financial_responsibility_evidence",
+      "name": "Financial Responsibility / Trust Fund Enrollment",
+      "description": "Insurance/bond or state trust fund participation proving cleanup/third‑party coverage.",
+      "frequency": "annual_or_on_change",
+      "trigger": "Policy renewal, ownership change, or trust fund enrollment.",
+      "min_fields": [
+        "facility_id","mechanism_type","carrier_or_fund",
+        "policy_number","effective_date","expiration_date",
+        "limits","proof_file"
+      ],
+      "retention_months": 60,
+      "jurisdiction_notes": {
+        "UT":"Declare PST Fund or other mechanism when applying for Certificate.",
+        "WY":"Financial responsibility account available per statute.",
+        "All":"FR evidence reviewed during inspections."
+      },
+      "citations": [
+        {"federal":"40 CFR 280 Subpart H"},
+        {"UT":"Certificate of Compliance guidance"},
+        {"WY":"W.S. § 35-11-1427 (financial responsibility account)"}
+      ]
+    },
+    {
+      "id": "annual_compliance_package",
+      "name": "Annual Compliance Package (Composite Submission)",
+      "description": "Aggregated submission of required annual summaries, tests, and inspections (state-specific).",
+      "frequency": "annual",
+      "trigger": "Required in CO; recommended elsewhere as best practice.",
+      "min_fields": [
+        "facility_id","report_year","monthly_ld_summary",
+        "atg_functionality_tests","line_leak_tests",
+        "interstitial_logs_summary","cp_test_results",
+        "rectifier_log_summary","annual_inspection_checklist","attachments"
+      ],
+      "retention_months": 36,
+      "jurisdiction_notes": {
+        "CO":"Explicit package required; follow OPS checklist and documentation rules.",
+        "Others":"Keep compiled annual dossier for inspector efficiency."
+      },
+      "citations": [
+        {"CO":"NISTM: Understanding the Colorado Annual Compliance Package"},
+        {"CO":"OPS UST Operation Guidance"}
+      ]
+    }
+  ]
+}

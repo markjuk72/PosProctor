@@ -1,0 +1,934 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "panels": [],
+      "title": "Tank Monitor Status",
+      "type": "row"
+    },
+    {
+      "id": 2,
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "type": "stat",
+      "title": "TLS Online",
+      "description": "Tank Level Sensors reporting successfully",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(posproctor_tank_monitor_status{group=~'$group', brand=~'$brand'} == 1)",
+          "legendFormat": "Online"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 3,
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "type": "stat",
+      "title": "TLS Offline/Error",
+      "description": "Tank Level Sensors with communication errors",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(posproctor_tank_monitor_status{group=~'$group', brand=~'$brand'} == 0) OR on() vector(0)",
+          "legendFormat": "Offline"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 2 }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 4,
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "type": "stat",
+      "title": "Total Tanks",
+      "description": "Total tanks being monitored",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(posproctor_tank_volume_gallons{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Tanks"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 5,
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "type": "stat",
+      "title": "Active Alarms",
+      "description": "Tanks with any active alarm condition",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(posproctor_tank_alarm_active{group=~'$group', brand=~'$brand'}) OR on() vector(0)",
+          "legendFormat": "Alarms"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 3 }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 6,
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 1 },
+      "type": "stat",
+      "title": "Alarm Breakdown",
+      "description": "Count of each alarm type across all tanks",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(posproctor_tank_alarm_leak{group=~'$group', brand=~'$brand'}) OR on() vector(0)",
+          "legendFormat": "Leak"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(posproctor_tank_alarm_high_water{group=~'$group', brand=~'$brand'}) OR on() vector(0)",
+          "legendFormat": "High Water"
+        },
+        {
+          "refId": "C",
+          "expr": "sum(posproctor_tank_alarm_overfill{group=~'$group', brand=~'$brand'}) OR on() vector(0)",
+          "legendFormat": "Overfill"
+        },
+        {
+          "refId": "D",
+          "expr": "sum(posproctor_tank_alarm_low_limit{group=~'$group', brand=~'$brand'}) OR on() vector(0)",
+          "legendFormat": "Low Limit"
+        },
+        {
+          "refId": "E",
+          "expr": "sum(posproctor_tank_alarm_theft{group=~'$group', brand=~'$brand'}) OR on() vector(0)",
+          "legendFormat": "Theft"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "red", "value": 1 }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "horizontal",
+        "textMode": "value_and_name",
+        "colorMode": "value"
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 10,
+      "panels": [],
+      "title": "Tank Fill Levels",
+      "type": "row"
+    },
+    {
+      "id": 12,
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 6 },
+      "type": "stat",
+      "title": "Tanks Below 25%",
+      "description": "Count of tanks with low fuel levels requiring attention",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(posproctor_tank_fill_percent{group=~'$group', brand=~'$brand'} < 25) OR on() vector(0)",
+          "legendFormat": "Low Tanks"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 3 },
+              { "color": "red", "value": 5 }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 14,
+      "gridPos": { "h": 4, "w": 8, "x": 8, "y": 6 },
+      "type": "stat",
+      "title": "Average Fill Level",
+      "description": "Average fill percentage across all tanks",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "avg(posproctor_tank_fill_percent{group=~'$group', brand=~'$brand'}) OR on() vector(0)",
+          "legendFormat": "Avg Fill"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 25 },
+              { "color": "yellow", "value": 40 },
+              { "color": "green", "value": 50 }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 15,
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 6 },
+      "type": "stat",
+      "title": "Total Inventory",
+      "description": "Total fuel volume across all tanks",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(posproctor_tank_volume_gallons{group=~'$group', brand=~'$brand'}) OR on() vector(0)",
+          "legendFormat": "Total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "unit": "locale"
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 100,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 10 },
+      "type": "timeseries",
+      "title": "$tank_store - Tank Fill Levels",
+      "description": "Tank fill percentage over time",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "posproctor_tank_fill_percent{group=~'$group', brand=~'$brand', store=~'$tank_store'}",
+          "legendFormat": "Tank {{tank_id}} - {{product}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Fill %",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "vis": false },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 20 },
+              { "color": "yellow", "value": 30 },
+              { "color": "green", "value": 40 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "calcs": ["lastNotNull", "min"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "repeat": "tank_store",
+      "repeatDirection": "h",
+      "maxPerRow": 2
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 500 },
+      "id": 30,
+      "panels": [],
+      "title": "Temperature & Environmental",
+      "type": "row"
+    },
+    {
+      "id": 31,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 501 },
+      "type": "timeseries",
+      "title": "Tank Temperature Over Time",
+      "description": "Fuel temperature trends",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "posproctor_tank_temperature_fahrenheit{group=~'$group', brand=~'$brand'}",
+          "legendFormat": "{{store}} {{product}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Temperature",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "fahrenheit"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "calcs": ["lastNotNull", "mean"], "displayMode": "table", "placement": "right" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 32,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 501 },
+      "type": "timeseries",
+      "title": "Water Level Over Time",
+      "description": "Water contamination monitoring",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "posproctor_tank_water_inches{group=~'$group', brand=~'$brand'}",
+          "legendFormat": "{{store}} {{product}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Water (inches)",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "none",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "red", "value": 1 }
+            ]
+          },
+          "unit": "lengthin",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "right" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 509 },
+      "id": 40,
+      "panels": [],
+      "title": "Alarms & Alerts",
+      "type": "row"
+    },
+    {
+      "id": 41,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 510 },
+      "type": "table",
+      "title": "Active Tank Alarms",
+      "description": "Tanks currently in alarm state",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "posproctor_tank_alarm_active{group=~'$group', brand=~'$brand'} == 1",
+          "legendFormat": "",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "store_id" },
+            "properties": [
+              { "id": "displayName", "value": "Store" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "product" },
+            "properties": [
+              { "id": "displayName", "value": "Product" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "tank_id" },
+            "properties": [
+              { "id": "displayName", "value": "Tank" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Value" },
+            "properties": [
+              { "id": "displayName", "value": "Status" },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "1": { "text": "ALARM", "color": "red" } } }
+              ]},
+              { "id": "custom.displayMode", "value": "color-background-solid" },
+              { "id": "thresholds", "value": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": 0 }
+                ]
+              }}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Time" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "__name__" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "brand" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "group" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "instance" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "job" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 42,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 510 },
+      "type": "timeseries",
+      "title": "Alarm History",
+      "description": "Active alarm count over time",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(posproctor_tank_alarm_leak{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Leak"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(posproctor_tank_alarm_high_water{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "High Water"
+        },
+        {
+          "refId": "C",
+          "expr": "sum(posproctor_tank_alarm_overfill{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Overfill"
+        },
+        {
+          "refId": "D",
+          "expr": "sum(posproctor_tank_alarm_low_limit{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Low Limit"
+        },
+        {
+          "refId": "E",
+          "expr": "sum(posproctor_tank_alarm_theft{group=~'$group', brand=~'$brand'})",
+          "legendFormat": "Theft"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Alarm Count",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "none",
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Leak" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "High Water" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Overfill" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Low Limit" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Theft" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "purple" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": { "calcs": ["lastNotNull", "sum"], "displayMode": "table", "placement": "right" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 518 },
+      "id": 50,
+      "panels": [],
+      "title": "TLS Monitor Status",
+      "type": "row"
+    },
+    {
+      "id": 51,
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 519 },
+      "type": "table",
+      "title": "TLS Monitor Status by Store",
+      "description": "Tank Level Sensor communication status for each store",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "posproctor_tank_monitor_status{group=~'$group', brand=~'$brand'}",
+          "legendFormat": "",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "store" },
+            "properties": [
+              { "id": "displayName", "value": "Store" },
+              { "id": "custom.width", "value": 120 },
+              { "id": "links", "value": [
+                {
+                  "title": "Open Commander UI",
+                  "url": "https://${__data.fields.ip}/ConfigClient.html",
+                  "targetBlank": true
+                }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "store_id" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "ip" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Value" },
+            "properties": [
+              { "id": "displayName", "value": "TLS Status" },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "0": { "text": "OFFLINE / ERROR", "color": "red" } } },
+                { "type": "value", "options": { "1": { "text": "ONLINE", "color": "green" } } }
+              ]},
+              { "id": "custom.displayMode", "value": "color-background-solid" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Time" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "__name__" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "brand" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "group" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "instance" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "job" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "store": 0,
+              "Value": 1
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              { "field": "store", "desc": false }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["posproctor", "tanks", "fuel"],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus-posproctor2"
+        },
+        "definition": "label_values(posproctor_scrape_success, group)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "group",
+        "options": [],
+        "query": "label_values(posproctor_scrape_success, group)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus-posproctor2"
+        },
+        "definition": "label_values(posproctor_scrape_success{group=~\"$group\"}, brand)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "brand",
+        "options": [],
+        "query": "label_values(posproctor_scrape_success{group=~\"$group\"}, brand)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus-posproctor2"
+        },
+        "definition": "label_values(posproctor_tank_volume_gallons{group=~\"$group\", brand=~\"$brand\"}, store)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "store",
+        "options": [],
+        "query": "label_values(posproctor_tank_volume_gallons{group=~\"$group\", brand=~\"$brand\"}, store)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": ["All"],
+          "value": ["$__all"]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus-posproctor2"
+        },
+        "definition": "label_values(posproctor_tank_volume_gallons{group=~\"$group\", brand=~\"$brand\"}, store)",
+        "hide": 2,
+        "includeAll": true,
+        "multi": true,
+        "name": "tank_store",
+        "options": [],
+        "query": "label_values(posproctor_tank_volume_gallons{group=~\"$group\", brand=~\"$brand\"}, store)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query",
+        "allValue": ""
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "PosProctor Tanks",
+  "uid": "posproctor-tanks",
+  "version": 1
+}

@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}POSProctor{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/posproctor_logo_light.svg') }}" type="image/svg+xml">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --posproctor-teal: #20B2AA;
+            --posproctor-orange: #E89B3C;
+            --posproctor-brown: #4A4039;
+            --posproctor-light-teal: #E0F5F2;
+            --posproctor-cream: #F5EBE0;
+            --posproctor-dark-teal: #1A8A85;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--posproctor-teal) !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar-brand img {
+            height: 32px;
+            width: auto;
+        }
+
+        .navbar-dark {
+            background-color: var(--posproctor-brown) !important;
+        }
+
+        .btn-primary {
+            background-color: var(--posproctor-teal);
+            border-color: var(--posproctor-teal);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--posproctor-dark-teal);
+            border-color: var(--posproctor-dark-teal);
+        }
+
+        .btn-outline-primary {
+            color: var(--posproctor-teal);
+            border-color: var(--posproctor-teal);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--posproctor-teal);
+            border-color: var(--posproctor-teal);
+            color: white;
+        }
+
+        body {
+            background-color: var(--posproctor-cream);
+        }
+
+        .text-primary {
+            color: var(--posproctor-teal) !important;
+        }
+
+        .bg-primary {
+            background-color: var(--posproctor-teal) !important;
+        }
+
+        .card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .card-header {
+            background-color: var(--posproctor-light-teal);
+            border-bottom: 2px solid var(--posproctor-teal);
+        }
+
+        .service-card {
+            transition: transform 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--posproctor-teal);
+        }
+
+        .footer {
+            background-color: var(--posproctor-brown);
+            color: white;
+            padding: 0;
+            margin-top: 12px;
+            font-size: 11px;
+            position: sticky;
+            bottom: 0;
+            z-index: 100;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .footer-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 5px 16px;
+            max-width: 100%;
+        }
+
+        .footer-left, .footer-center, .footer-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-version {
+            font-weight: 600;
+            color: var(--posproctor-teal);
+            white-space: nowrap;
+        }
+
+        .svc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 1px 7px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.08);
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+
+        .svc-badge:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .svc-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .svc-dot.online { background: #28a745; box-shadow: 0 0 4px rgba(40,167,69,0.6); }
+        .svc-dot.offline { background: #dc3545; box-shadow: 0 0 4px rgba(220,53,69,0.6); }
+        .svc-dot.degraded { background: var(--posproctor-orange); box-shadow: 0 0 4px rgba(232,155,60,0.6); }
+        .svc-dot.loading { background: #888; animation: dotPulse 1.2s infinite; }
+
+        @keyframes dotPulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        .svc-name {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .footer-meta {
+            color: rgba(255,255,255,0.5);
+            white-space: nowrap;
+        }
+
+        .footer-meta .fa-clock {
+            margin-right: 2px;
+        }
+
+        .footer-divider {
+            width: 1px;
+            height: 14px;
+            background: rgba(255,255,255,0.15);
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        /* Dark mode footer */
+        body.dark-mode .footer {
+            background-color: #1e1a17;
+            border-top-color: rgba(255,255,255,0.05);
+        }
+
+        body.dark-mode .svc-badge {
+            background: rgba(255,255,255,0.05);
+        }
+
+        body.dark-mode .svc-badge:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* NOC clock divider — only visible in noc mode */
+        body.noc-mode .noc-clock-divider {
+            display: inline-block !important;
+        }
+
+        /* Stat pills for NOC footer */
+        .stat-pill.pill-unstable {
+            background: linear-gradient(135deg, #ffc107 0%, #d4a106 100%);
+            color: #000;
+        }
+
+        .stat-pill.pill-unstable.all-clear {
+            background: #e9ecef;
+            color: #888;
+        }
+
+        body.dark-mode .stat-pill.pill-unstable.all-clear {
+            background: var(--dm-surface);
+            color: var(--dm-text-muted);
+        }
+
+        .alert-info {
+            background-color: var(--posproctor-light-teal);
+            border-color: var(--posproctor-teal);
+            color: var(--posproctor-brown);
+        }
+
+        h1, h2, h3 {
+            color: var(--posproctor-brown);
+        }
+
+        .logo-header {
+            background: linear-gradient(135deg, var(--posproctor-teal), #17a2b8);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .nav-link.active {
+            color: var(--posproctor-orange) !important;
+            font-weight: bold;
+        }
+
+        .badge.bg-primary {
+            background-color: var(--posproctor-teal) !important;
+        }
+
+        .badge.bg-warning {
+            background-color: var(--posproctor-orange) !important;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* =============================================
+           GLOBAL DARK MODE STYLES
+           ============================================= */
+        body.dark-mode {
+            --dm-bg:       #2c2420;
+            --dm-surface:  #3a322c;
+            --dm-card:     #443b34;
+            --dm-card-border: #5a504a;
+            --dm-text:     #e8e0d8;
+            --dm-text-muted: #a89e95;
+            --dm-bar:      #3a322c;
+            --dm-bar-border: #5a504a;
+            background-color: var(--dm-bg) !important;
+        }
+
+        body.dark-mode .container-fluid {
+            background-color: var(--dm-bg) !important;
+        }
+
+        body.dark-mode .container {
+            background-color: var(--dm-bg) !important;
+            box-shadow: none;
+            color: var(--dm-text);
+        }
+
+        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3,
+        body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 {
+            color: var(--dm-text) !important;
+        }
+
+        body.dark-mode .text-muted {
+            color: var(--dm-text-muted) !important;
+        }
+
+        body.dark-mode .card {
+            background: var(--dm-card);
+            border-color: var(--dm-card-border);
+            color: var(--dm-text);
+        }
+
+        body.dark-mode .card-header {
+            background-color: var(--dm-surface) !important;
+            border-color: var(--dm-card-border);
+            color: var(--dm-text);
+        }
+
+        body.dark-mode .card-body {
+            color: var(--dm-text);
+        }
+
+        body.dark-mode .card-footer {
+            background-color: var(--dm-surface);
+            border-color: var(--dm-card-border);
+        }
+
+        body.dark-mode .table {
+            color: var(--dm-text);
+        }
+
+        body.dark-mode .table-striped > tbody > tr:nth-of-type(odd) {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        body.dark-mode .table-hover > tbody > tr:hover {
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+
+        body.dark-mode .table > thead {
+            background-color: var(--dm-surface);
+        }
+
+        body.dark-mode .table-dark {
+            background-color: var(--dm-surface) !important;
+        }
+
+        body.dark-mode .table td, body.dark-mode .table th {
+            border-color: var(--dm-card-border);
+        }
+
+        body.dark-mode .form-control, body.dark-mode .form-select {
+            background-color: var(--dm-surface);
+            border-color: var(--dm-card-border);
+            color: var(--dm-text);
+        }
+
+        body.dark-mode .form-control:focus, body.dark-mode .form-select:focus {
+            background-color: var(--dm-surface);
+            border-color: var(--posproctor-teal);
+            color: var(--dm-text);
+        }
+
+        body.dark-mode .form-control::placeholder {
+            color: var(--dm-text-muted);
+        }
+
+        body.dark-mode .form-text {
+            color: var(--dm-text-muted);
+        }
+
+        body.dark-mode .form-label {
+            color: var(--dm-text);
+        }
+
+        body.dark-mode .input-group-text {
+            background-color: var(--dm-surface);
+            border-color: var(--dm-card-border);
+            color: var(--dm-text-muted);
+        }
+
+        body.dark-mode .btn-outline-secondary {
+            border-color: var(--dm-card-border);
+            color: var(--dm-text-muted);
+        }
+
+        body.dark-mode .btn-outline-secondary:hover {
+            background-color: var(--dm-surface);
+            border-color: var(--dm-text-muted);
+            color: var(--dm-text);
+        }
+
+        body.dark-mode .btn-outline-primary {
+            border-color: var(--posproctor-teal);
+            color: var(--posproctor-teal);
+        }
+
+        body.dark-mode .btn-outline-primary:hover {
+            background-color: var(--posproctor-teal);
+            color: #fff;
+        }
+
+        body.dark-mode .alert-info {
+            background-color: rgba(32, 178, 170, 0.15);
+            border-color: var(--posproctor-teal);
+            color: var(--dm-text);
+        }
+
+        body.dark-mode .alert-success {
+            background-color: rgba(40, 167, 69, 0.15);
+            border-color: #28a745;
+            color: #8fdf9f;
+        }
+
+        body.dark-mode .alert-warning {
+            background-color: rgba(232, 155, 60, 0.15);
+            border-color: var(--posproctor-orange);
+            color: #f5c78e;
+        }
+
+        body.dark-mode .alert-danger {
+            background-color: rgba(220, 53, 69, 0.15);
+            border-color: #dc3545;
+            color: #f0a0a8;
+        }
+
+        body.dark-mode .alert-secondary {
+            background-color: var(--dm-surface);
+            border-color: var(--dm-card-border);
+            color: var(--dm-text-muted);
+        }
+
+        body.dark-mode .bg-light {
+            background-color: var(--dm-surface) !important;
+        }
+
+        body.dark-mode .bg-primary.text-white .card-header,
+        body.dark-mode .card-header.bg-primary {
+            background: linear-gradient(135deg, var(--posproctor-teal), var(--posproctor-dark-teal)) !important;
+        }
+
+        body.dark-mode .modal-content {
+            background-color: var(--dm-card);
+            color: var(--dm-text);
+        }
+
+        body.dark-mode .modal-header, body.dark-mode .modal-footer {
+            border-color: var(--dm-card-border);
+        }
+
+        body.dark-mode .btn-close {
+            filter: invert(1);
+        }
+
+        body.dark-mode code {
+            background-color: var(--dm-surface);
+            color: var(--posproctor-orange);
+        }
+
+        body.dark-mode a:not(.btn):not(.nav-link):not(.navbar-brand) {
+            color: var(--posproctor-teal);
+        }
+
+        body.dark-mode hr {
+            border-color: var(--dm-card-border);
+        }
+
+        /* Dark mode scrollbar */
+        body.dark-mode ::-webkit-scrollbar { width: 8px; height: 8px; }
+        body.dark-mode ::-webkit-scrollbar-track { background: var(--dm-bg); }
+        body.dark-mode ::-webkit-scrollbar-thumb { background: var(--dm-card-border); border-radius: 4px; }
+
+        /* Theme toggle in navbar */
+        .theme-toggle-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            margin-right: 10px;
+            border-radius: 15px;
+            background: rgba(255,255,255,0.1);
+            cursor: pointer;
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .theme-toggle-nav:hover {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+
+        .theme-toggle-nav i {
+            font-size: 14px;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='img/posproctor_logo_light.svg') }}" alt="POSProctor Logo">
+                <span>POSProctor</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <!-- Always visible: Dashboard -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+
+                    <!-- Always visible: Transactions -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'tlogs_page' %}active{% endif %}" href="{{ url_for('tlogs_page') }}">
+                            <i class="fas fa-file-invoice"></i> Transactions
+                        </a>
+                    </li>
+
+                    <!-- Always visible: Tanks -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'tanks_page' %}active{% endif %}" href="{{ url_for('tanks_page') }}">
+                            <i class="fas fa-gas-pump"></i> Tanks
+                        </a>
+                    </li>
+
+                    <!-- Protected items: Only show when authenticated OR when auth is disabled -->
+                    {% if current_user.is_authenticated or not auth_config.enabled %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'commanders_page' %}active{% endif %}" href="{{ url_for('commanders_page') }}">
+                            <i class="fas fa-list"></i> Commanders
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'password_manager_page' %}active{% endif %}" href="{{ url_for('password_manager_page') }}">
+                            <i class="fas fa-key"></i> Passwords
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'config_page' %}active{% endif %}" href="{{ url_for('config_page') }}">
+                            <i class="fas fa-cog"></i> Configuration
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <!-- Right side navigation -->
+                <ul class="navbar-nav ms-auto">
+                    <!-- Theme toggle -->
+                    <li class="nav-item d-flex align-items-center">
+                        <button class="theme-toggle-nav" id="navThemeToggle" onclick="toggleGlobalDarkMode()" title="Toggle light/dark mode">
+                            <i class="fas fa-sun" id="navThemeIcon"></i>
+                            <span id="navThemeLabel">Light</span>
+                        </button>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                        <!-- Authenticated: Show user info and logout -->
+                        <li class="nav-item">
+                            <span class="navbar-text text-light me-3">
+                                <i class="fas fa-user"></i> {{ current_user.username }}
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </li>
+                        <li class="nav-item ms-2">
+                            <span class="badge bg-success d-flex align-items-center h-100 px-2">
+                                <i class="fab fa-microsoft me-1"></i> Entra
+                            </span>
+                        </li>
+                    {% elif auth_config.enabled %}
+                        <!-- Not authenticated but auth enabled: Show login button and status -->
+                        <li class="nav-item">
+                            <a class="btn btn-sm btn-outline-light" href="{{ url_for('login') }}">
+                                <i class="fab fa-microsoft"></i> Entra Login
+                            </a>
+                        </li>
+                        <li class="nav-item ms-2">
+                            <span class="badge bg-info d-flex align-items-center h-100 px-2">
+                                <i class="fab fa-microsoft me-1"></i> Entra
+                            </span>
+                        </li>
+                    {% else %}
+                        <!-- Auth disabled: Show indicator -->
+                        <li class="nav-item">
+                            <span class="badge bg-secondary d-flex align-items-center h-100 px-2">
+                                <i class="fas fa-unlock me-1"></i> Auth Disabled
+                            </span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid" style="background-color: var(--posproctor-cream); min-height: calc(100vh - 90px);">
+        <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <footer class="footer" id="sysFooter">
+        <div class="footer-inner">
+            <div class="footer-left">
+                <span class="footer-version">POSProctor v2.0</span>
+                <span class="footer-divider"></span>
+                <span class="svc-badge" title="Monitoring service">
+                    <span class="svc-dot loading" id="svc-monitoring"></span>
+                    <span class="svc-name">Monitor</span>
+                </span>
+                <span class="svc-badge" title="Transaction log service">
+                    <span class="svc-dot loading" id="svc-tlog"></span>
+                    <span class="svc-name">TLOG</span>
+                </span>
+                <span class="svc-badge" title="Prometheus metrics">
+                    <span class="svc-dot loading" id="svc-prometheus"></span>
+                    <span class="svc-name">Prometheus</span>
+                </span>
+                <span class="svc-badge" title="Grafana dashboards">
+                    <span class="svc-dot loading" id="svc-grafana"></span>
+                    <span class="svc-name">Grafana</span>
+                </span>
+                <span class="svc-badge" title="Bitwarden credential vault">
+                    <span class="svc-dot loading" id="svc-bitwarden"></span>
+                    <span class="svc-name">Vault</span>
+                </span>
+            </div>
+            <div class="footer-center noc-footer-stats">
+                <span class="footer-divider"></span>
+                <div class="stat-pill pill-total">
+                    <i class="fas fa-store" style="font-size: 10px;"></i>
+                    <span class="pill-num" id="nocStatTotal">-</span> Stores
+                </div>
+                <div class="stat-pill pill-online">
+                    <i class="fas fa-circle" style="font-size: 7px;"></i>
+                    <span class="pill-num" id="nocStatOnline">-</span> Online
+                </div>
+                <div class="stat-pill pill-unstable" id="nocUnstablePill">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 8px;"></i>
+                    <span class="pill-num" id="nocStatUnstable">-</span> Unstable
+                </div>
+                <div class="stat-pill pill-offline" id="nocOfflinePill">
+                    <i class="fas fa-circle" style="font-size: 7px;"></i>
+                    <span class="pill-num" id="nocStatOffline">-</span> Offline
+                </div>
+                <div class="stat-pill pill-groups">
+                    <i class="fas fa-layer-group" style="font-size: 10px;"></i>
+                    <span class="pill-num" id="nocStatGroups">-</span> Groups
+                </div>
+            </div>
+            <div class="footer-right">
+                <span class="footer-meta" id="footerScrapeInfo" title="Last monitoring scrape"></span>
+                <span class="footer-divider" id="footerDivider" style="display:none;"></span>
+                <span class="footer-meta" id="footerUptime" title="Monitoring service uptime"></span>
+                <span class="footer-divider noc-clock-divider" style="display:none;"></span>
+                <span class="noc-clock" id="nocClock"></span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    (function loadFooterHealth() {
+        fetch('/api/system/health')
+            .then(r => r.json())
+            .then(data => {
+                const svcs = data.services || {};
+                ['monitoring','tlog','prometheus','grafana','bitwarden'].forEach(name => {
+                    const dot = document.getElementById('svc-' + name);
+                    if (!dot) return;
+                    const info = svcs[name] || {};
+                    dot.className = 'svc-dot ' + (info.status || 'offline');
+                });
+
+                // Scrape info
+                const mon = svcs.monitoring || {};
+                const scrapeEl = document.getElementById('footerScrapeInfo');
+                if (mon.last_scrape_age_seconds != null) {
+                    const age = mon.last_scrape_age_seconds;
+                    let ageStr;
+                    if (age < 60) ageStr = age + 's ago';
+                    else if (age < 3600) ageStr = Math.floor(age / 60) + 'm ago';
+                    else ageStr = Math.floor(age / 3600) + 'h ago';
+                    scrapeEl.innerHTML = '<i class="fas fa-clock"></i> Scraped ' + ageStr +
+                        ' &middot; ' + mon.last_scrape_success + '/' + mon.last_scrape_total + ' OK';
+                }
+
+                // Uptime
+                const uptimeEl = document.getElementById('footerUptime');
+                const divider = document.getElementById('footerDivider');
+                if (mon.uptime_seconds) {
+                    const u = mon.uptime_seconds;
+                    let upStr;
+                    if (u < 3600) upStr = Math.floor(u / 60) + 'm';
+                    else if (u < 86400) upStr = Math.floor(u / 3600) + 'h ' + Math.floor((u % 3600) / 60) + 'm';
+                    else upStr = Math.floor(u / 86400) + 'd ' + Math.floor((u % 86400) / 3600) + 'h';
+                    uptimeEl.innerHTML = '<i class="fas fa-arrow-up"></i> Uptime ' + upStr;
+                    divider.style.display = '';
+                }
+            })
+            .catch(() => {
+                // Silently fail — dots stay in loading state
+            });
+    })();
+
+    // NOC clock — ticks every second, only visible in noc-mode
+    (function nocClock() {
+        const el = document.getElementById('nocClock');
+        if (!el) return;
+        function tick() {
+            const now = new Date();
+            el.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+        tick();
+        setInterval(tick, 1000);
+    })();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    // === Global Dark Mode (default: dark) ===
+    function toggleGlobalDarkMode() {
+        const isDark = document.body.classList.toggle('dark-mode');
+        localStorage.setItem('posproctor-dark-mode', isDark ? '1' : '0');
+        updateNavThemeUI(isDark);
+    }
+
+    function updateNavThemeUI(isDark) {
+        const icon = document.getElementById('navThemeIcon');
+        const label = document.getElementById('navThemeLabel');
+        if (icon && label) {
+            if (isDark) {
+                icon.className = 'fas fa-sun';
+                label.textContent = 'Light';
+            } else {
+                icon.className = 'fas fa-moon';
+                label.textContent = 'Dark';
+            }
+        }
+    }
+
+    // Restore dark mode (default to dark if not set)
+    (function() {
+        const saved = localStorage.getItem('posproctor-dark-mode');
+        // Default to dark mode (saved !== '0')
+        const useDark = saved !== '0';
+        if (useDark) {
+            document.body.classList.add('dark-mode');
+        }
+        updateNavThemeUI(useDark);
+    })();
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

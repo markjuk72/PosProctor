@@ -1,0 +1,1205 @@
+{% extends "base.html" %}
+
+{% block title %}POSProctor Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* === Top bar: stats + controls in one tight strip === */
+    .top-bar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 10px 0;
+        margin-bottom: 8px;
+    }
+
+    .stat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .stat-pill .pill-num {
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .stat-pill.pill-total {
+        background: linear-gradient(135deg, #20B2AA 0%, #1A8A85 100%);
+        color: #fff;
+    }
+
+    .stat-pill.pill-online {
+        background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+        color: #fff;
+    }
+
+    .stat-pill.pill-offline {
+        background: linear-gradient(135deg, #dc3545 0%, #a71d2a 100%);
+        color: #fff;
+    }
+
+    .stat-pill.pill-offline.all-clear {
+        background: #e9ecef;
+        color: #888;
+    }
+
+    .stat-pill.pill-unstable {
+        background: linear-gradient(135deg, #ffc107 0%, #d4a106 100%);
+        color: #000;
+    }
+
+    .stat-pill.pill-unstable.all-clear {
+        background: #e9ecef;
+        color: #888;
+    }
+
+    .stat-pill.pill-groups {
+        background: linear-gradient(135deg, #E89B3C 0%, #d08530 100%);
+        color: #fff;
+    }
+
+    /* === Fleet controls row === */
+    .fleet-bar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 8px 14px;
+        background: linear-gradient(135deg, var(--posproctor-light-teal) 0%, #d4f0ed 100%);
+        border: 1px solid var(--posproctor-teal);
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .fleet-search {
+        max-width: 240px;
+        border-radius: 16px;
+        font-size: 13px;
+        padding: 4px 14px;
+        border: 1px solid #bbb;
+    }
+
+    .fleet-search:focus {
+        border-color: var(--posproctor-teal);
+        box-shadow: 0 0 0 2px rgba(32, 178, 170, 0.2);
+    }
+
+    .fleet-bar .btn-group .btn {
+        font-size: 12px;
+        padding: 3px 10px;
+    }
+
+    .refresh-indicator {
+        font-size: 11px;
+        color: #777;
+    }
+
+    /* === Dark mode toggle === */
+    .dark-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: 14px;
+        border: 1px solid #bbb;
+        background: transparent;
+        cursor: pointer;
+        font-size: 12px;
+        color: #666;
+        transition: all 0.2s;
+    }
+
+    .dark-toggle:hover {
+        border-color: var(--posproctor-teal);
+        color: var(--posproctor-teal);
+    }
+
+    .dark-toggle i {
+        font-size: 11px;
+        transition: transform 0.3s;
+    }
+
+    /* === Store grid === */
+    .store-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+
+    .store-card {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 7px 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        position: relative;
+    }
+
+    .store-card:hover {
+        border-color: var(--posproctor-teal);
+        box-shadow: 0 3px 12px rgba(32, 178, 170, 0.25);
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .store-card .store-name {
+        font-weight: 600;
+        font-size: 12px;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--posproctor-brown);
+    }
+
+    .store-card .store-ip {
+        font-size: 13px;
+        color: #999;
+        font-family: 'Courier New', monospace;
+        margin-bottom: 3px;
+    }
+
+    .store-card .status-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 3px;
+        vertical-align: middle;
+    }
+
+    .store-card .status-dot.online { background: #28a745; box-shadow: 0 0 4px rgba(40, 167, 69, 0.5); }
+    .store-card .status-dot.offline { background: #dc3545; box-shadow: 0 0 4px rgba(220, 53, 69, 0.5); }
+    .store-card .status-dot.unstable { background: #ffc107; box-shadow: 0 0 4px rgba(255, 193, 7, 0.5); }
+    .store-card .status-dot.checking { background: #6c757d; animation: pulse 1s infinite; }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
+    }
+
+    .store-card .status-text {
+        font-size: 10px;
+        font-weight: 500;
+        vertical-align: middle;
+    }
+
+    .store-card.status-online {
+        border-left: 3px solid #28a745;
+    }
+
+    .store-card.status-offline {
+        border-left: 3px solid #dc3545;
+        background: #fff8f8;
+    }
+
+    .store-card.status-unstable {
+        border-left: 3px solid #ffc107;
+        background: #fffbf0;
+    }
+
+    /* === Group sections === */
+    .group-section {
+        margin-bottom: 10px;
+    }
+
+    .group-header {
+        background: linear-gradient(90deg, var(--posproctor-brown) 0%, #6b5d52 100%);
+        padding: 5px 12px;
+        border-radius: 5px;
+        margin-bottom: 6px;
+        font-weight: 600;
+        font-size: 13px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #fff;
+    }
+
+    .group-header .group-stats {
+        font-weight: normal;
+        font-size: 11px;
+        color: rgba(255,255,255,0.7);
+    }
+
+    /* === Loading === */
+    .loading-spinner {
+        text-align: center;
+        padding: 30px;
+    }
+
+    .loading-spinner i {
+        font-size: 2.5em;
+        color: var(--posproctor-teal);
+    }
+
+    /* === Grafana link chip === */
+    .grafana-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        text-decoration: none;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .grafana-chip:hover {
+        color: #fff;
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        transform: translateY(-1px);
+    }
+
+    /* =============================================
+       DARK MODE — warm brown-inspired palette
+       ============================================= */
+    body.dark-mode {
+        --dm-bg:       #2c2420;
+        --dm-surface:  #3a322c;
+        --dm-card:     #443b34;
+        --dm-card-border: #5a504a;
+        --dm-text:     #e8e0d8;
+        --dm-text-muted: #a89e95;
+        --dm-bar:      #3a322c;
+        --dm-bar-border: #5a504a;
+        --dm-group-hdr-from: #5a504a;
+        --dm-group-hdr-to:   #4a4039;
+    }
+
+    body.dark-mode .container-fluid {
+        background-color: var(--dm-bg) !important;
+    }
+
+    body.dark-mode .container {
+        background-color: var(--dm-bg) !important;
+        box-shadow: none;
+        color: var(--dm-text);
+    }
+
+    /* Stat pills — keep their gradients, slight tweak for dark */
+    body.dark-mode .stat-pill.pill-offline.all-clear {
+        background: var(--dm-surface);
+        color: var(--dm-text-muted);
+    }
+
+    /* Fleet bar */
+    body.dark-mode .fleet-bar {
+        background: var(--dm-bar);
+        border-color: var(--dm-bar-border);
+    }
+
+    body.dark-mode .fleet-search {
+        background: var(--dm-surface);
+        border-color: var(--dm-card-border);
+        color: var(--dm-text);
+    }
+
+    body.dark-mode .fleet-search::placeholder {
+        color: var(--dm-text-muted);
+    }
+
+    body.dark-mode .fleet-bar .text-muted {
+        color: var(--dm-text-muted) !important;
+    }
+
+    body.dark-mode .fleet-bar .btn-outline-secondary {
+        border-color: var(--dm-card-border);
+        color: var(--dm-text-muted);
+    }
+
+    body.dark-mode .fleet-bar .btn-outline-secondary:hover,
+    body.dark-mode .fleet-bar .btn-check:checked + .btn-outline-secondary {
+        background: var(--posproctor-teal);
+        border-color: var(--posproctor-teal);
+        color: #fff;
+    }
+
+    body.dark-mode .fleet-bar .btn-outline-primary {
+        border-color: var(--posproctor-teal);
+        color: var(--posproctor-teal);
+    }
+
+    body.dark-mode .fleet-bar .btn-outline-primary:hover {
+        background: var(--posproctor-teal);
+        color: #fff;
+    }
+
+    /* Store cards */
+    body.dark-mode .store-card {
+        background: var(--dm-card);
+        border-color: var(--dm-card-border);
+    }
+
+    body.dark-mode .store-card:hover {
+        border-color: var(--posproctor-teal);
+        box-shadow: 0 3px 14px rgba(32, 178, 170, 0.3);
+    }
+
+    body.dark-mode .store-card .store-name {
+        color: var(--dm-text);
+    }
+
+    body.dark-mode .store-card .store-ip {
+        color: var(--dm-text-muted);
+    }
+
+    body.dark-mode .store-card .status-text {
+        color: var(--dm-text-muted);
+    }
+
+    body.dark-mode .store-card.status-offline {
+        background: #3e2f2f;
+    }
+
+    body.dark-mode .store-card.status-unstable {
+        background: #3e3a2a;
+    }
+
+    /* Group headers */
+    body.dark-mode .group-header {
+        background: linear-gradient(90deg, var(--dm-group-hdr-from) 0%, var(--dm-group-hdr-to) 100%);
+    }
+
+    /* Refresh indicator */
+    body.dark-mode .refresh-indicator {
+        color: var(--dm-text-muted);
+    }
+
+    /* Loading text */
+    body.dark-mode .loading-spinner p {
+        color: var(--dm-text-muted);
+    }
+
+    /* Dark toggle button in dark mode */
+    body.dark-mode .dark-toggle {
+        border-color: var(--dm-card-border);
+        color: var(--posproctor-orange);
+    }
+
+    body.dark-mode .dark-toggle:hover {
+        border-color: var(--posproctor-orange);
+    }
+
+    /* Scrollbar dark mode */
+    body.dark-mode ::-webkit-scrollbar { width: 8px; }
+    body.dark-mode ::-webkit-scrollbar-track { background: var(--dm-bg); }
+    body.dark-mode ::-webkit-scrollbar-thumb { background: var(--dm-card-border); border-radius: 4px; }
+
+    /* === NOC / Big Screen toggle button === */
+    .noc-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: 14px;
+        border: 1px solid #bbb;
+        background: transparent;
+        cursor: pointer;
+        font-size: 12px;
+        color: #666;
+        transition: all 0.2s;
+    }
+
+    .noc-toggle:hover {
+        border-color: var(--posproctor-teal);
+        color: var(--posproctor-teal);
+    }
+
+    .noc-toggle i { font-size: 11px; }
+
+    body.dark-mode .noc-toggle {
+        border-color: var(--dm-card-border);
+        color: var(--posproctor-orange);
+    }
+
+    body.dark-mode .noc-toggle:hover {
+        border-color: var(--posproctor-orange);
+    }
+
+    /* =============================================
+       NOC / BIG SCREEN MODE
+       ============================================= */
+    body.noc-mode .navbar { display: none !important; }
+
+    body.noc-mode .container-fluid {
+        min-height: 100vh !important;
+        padding: 0 !important;
+    }
+
+    body.noc-mode .container {
+        max-width: 100% !important;
+        padding: 10px 16px !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        margin-top: 0 !important;
+    }
+
+    /* Bigger stat pills for NOC */
+    body.noc-mode .stat-pill {
+        padding: 6px 18px;
+        font-size: 14px;
+        border-radius: 22px;
+    }
+
+    body.noc-mode .stat-pill .pill-num {
+        font-size: 20px;
+    }
+
+    /* Slightly larger store cards */
+    body.noc-mode .store-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 8px;
+    }
+
+    body.noc-mode .store-card .store-name {
+        font-size: 13px;
+    }
+
+    body.noc-mode .store-card .store-ip {
+        font-size: 14px;
+    }
+
+    body.noc-mode .store-card .status-dot {
+        width: 9px;
+        height: 9px;
+    }
+
+    body.noc-mode .store-card .status-text {
+        font-size: 11px;
+    }
+
+    /* Group headers bigger */
+    body.noc-mode .group-header {
+        padding: 7px 14px;
+        font-size: 14px;
+    }
+
+    /* Footer becomes a status bar in NOC mode */
+    body.noc-mode .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: 0;
+        padding: 0;
+        border-top: 1px solid rgba(255,255,255,0.15);
+        z-index: 1000;
+    }
+
+    body.noc-mode .footer-inner {
+        padding: 6px 20px;
+    }
+
+    body.noc-mode .footer .svc-dot {
+        width: 8px;
+        height: 8px;
+    }
+
+    body.noc-mode .footer .svc-name {
+        font-size: 12px;
+    }
+
+    body.noc-mode .footer .svc-badge {
+        padding: 2px 10px;
+    }
+
+    body.noc-mode .footer .footer-meta {
+        font-size: 12px;
+        color: rgba(255,255,255,0.6);
+    }
+
+    body.noc-mode .footer .footer-version {
+        font-size: 13px;
+    }
+
+    /* NOC footer: show the stat pills row promoted into the footer */
+    .noc-footer-stats {
+        display: none;
+    }
+
+    body.noc-mode .noc-footer-stats {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    body.noc-mode .noc-footer-stats .stat-pill {
+        padding: 3px 12px;
+        font-size: 12px;
+        border-radius: 16px;
+    }
+
+    body.noc-mode .noc-footer-stats .stat-pill .pill-num {
+        font-size: 15px;
+    }
+
+    /* Live clock for NOC */
+    .noc-clock {
+        display: none;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--posproctor-teal);
+        font-family: 'Courier New', monospace;
+        letter-spacing: 1px;
+    }
+
+    body.noc-mode .noc-clock {
+        display: inline-block;
+    }
+
+    /* Hide normal top stat pills in NOC mode — they live in the footer now */
+    body.noc-mode .top-bar .stat-pill {
+        display: none;
+    }
+
+    /* Bottom padding so grid doesn't go under fixed footer */
+    body.noc-mode #fleetGridContainer {
+        padding-bottom: 50px;
+    }
+
+    /* Idle cursor hide */
+    body.noc-mode.noc-idle { cursor: none !important; }
+    body.noc-mode.noc-idle * { cursor: none !important; }
+
+    /* Font size control */
+    .font-size-control {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px;
+        border-radius: 14px;
+        border: 1px solid #bbb;
+        background: transparent;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .font-size-control input[type="range"] {
+        width: 60px;
+        height: 4px;
+        cursor: pointer;
+        accent-color: var(--posproctor-teal);
+    }
+
+    .font-size-control .font-label {
+        font-size: 11px;
+        min-width: 28px;
+        text-align: center;
+    }
+
+    /* Dark mode styling */
+    body.dark-mode .font-size-control {
+        border-color: var(--dm-card-border);
+        color: var(--dm-text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top bar: Stats pills + Grafana link -->
+<div class="top-bar">
+    <div class="stat-pill pill-total">
+        <i class="fas fa-store" style="font-size: 11px;"></i>
+        <span class="pill-num" id="statTotal">{{ stats.total_stores }}</span> Stores
+    </div>
+    <div class="stat-pill pill-online">
+        <i class="fas fa-circle" style="font-size: 8px;"></i>
+        <span class="pill-num" id="statOnline">-</span> Online
+    </div>
+    <div class="stat-pill pill-unstable" id="unstablePill">
+        <i class="fas fa-exclamation-triangle" style="font-size: 9px;"></i>
+        <span class="pill-num" id="statUnstable">-</span> Unstable
+    </div>
+    <div class="stat-pill pill-offline" id="offlinePill">
+        <i class="fas fa-circle" style="font-size: 8px;"></i>
+        <span class="pill-num" id="statOffline">-</span> Offline
+    </div>
+    <div class="stat-pill pill-groups">
+        <i class="fas fa-layer-group" style="font-size: 11px;"></i>
+        <span class="pill-num" id="statGroups">{{ stats.groups }}</span> Groups
+    </div>
+
+    <div class="ms-auto d-flex align-items-center gap-2">
+        <span class="refresh-indicator" id="lastRefreshTime">
+            <i class="fas fa-clock"></i> Loading...
+        </span>
+        <div class="font-size-control" title="Adjust font size">
+            <i class="fas fa-font" style="font-size: 10px;"></i>
+            <input type="range" id="fontSizeSlider" min="0" max="4" value="2" step="1">
+            <span class="font-label" id="fontSizeLabel">100%</span>
+        </div>
+        <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle dark mode">
+            <i class="fas fa-moon" id="darkToggleIcon"></i>
+            <span id="darkToggleLabel">Dark</span>
+        </button>
+        <button class="noc-toggle" id="nocToggle" onclick="toggleNocMode()" title="Big screen / NOC mode">
+            <i class="fas fa-tv" id="nocToggleIcon"></i>
+            <span id="nocToggleLabel">NOC</span>
+        </button>
+        <a href="#" id="grafana-link" class="grafana-chip" target="_blank">
+            <i class="fas fa-chart-line"></i> Grafana
+        </a>
+    </div>
+</div>
+
+<!-- Fleet controls bar -->
+<div class="fleet-bar">
+    <input type="text" class="form-control form-control-sm fleet-search" id="fleetSearch"
+           placeholder="Search stores or IPs..." oninput="onSearchInput()">
+
+    <div class="d-flex align-items-center gap-2">
+        <span class="text-muted" style="font-size: 12px;">Group:</span>
+        <div class="btn-group" role="group">
+            <input type="radio" class="btn-check" name="groupBy" id="groupByNone" value="none" checked onchange="updateGrouping()">
+            <label class="btn btn-outline-secondary btn-sm" for="groupByNone">None</label>
+            <input type="radio" class="btn-check" name="groupBy" id="groupByState" value="state" onchange="updateGrouping()">
+            <label class="btn btn-outline-secondary btn-sm" for="groupByState">State</label>
+            <input type="radio" class="btn-check" name="groupBy" id="groupByBrand" value="brand" onchange="updateGrouping()">
+            <label class="btn btn-outline-secondary btn-sm" for="groupByBrand">Brand</label>
+        </div>
+    </div>
+
+    <button type="button" class="btn btn-outline-primary btn-sm ms-auto" onclick="loadFleetStatus()" style="font-size: 12px; padding: 3px 10px;">
+        <i class="fas fa-sync"></i> Refresh
+    </button>
+</div>
+
+<!-- Loading Spinner -->
+<div id="fleetLoading" class="loading-spinner">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p class="mt-2" style="font-size: 13px;">Loading fleet status...</p>
+</div>
+
+<!-- Store Grid Container -->
+<div id="fleetGridContainer" style="display: none;"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // === Grafana link ===
+    document.getElementById('grafana-link').href =
+        window.location.protocol + '//' + window.location.hostname + ':{{ services.grafana_port }}';
+
+    // === Dark mode (syncs with navbar toggle) ===
+    function toggleDarkMode() {
+        const isDark = document.body.classList.toggle('dark-mode');
+        localStorage.setItem('posproctor-dark-mode', isDark ? '1' : '0');
+        updateDarkToggleUI(isDark);
+        // Also update navbar toggle if present
+        if (typeof updateNavThemeUI === 'function') {
+            updateNavThemeUI(isDark);
+        }
+    }
+
+    function updateDarkToggleUI(isDark) {
+        const icon = document.getElementById('darkToggleIcon');
+        const label = document.getElementById('darkToggleLabel');
+        if (icon && label) {
+            if (isDark) {
+                icon.className = 'fas fa-sun';
+                label.textContent = 'Light';
+            } else {
+                icon.className = 'fas fa-moon';
+                label.textContent = 'Dark';
+            }
+        }
+    }
+
+    // Restore dark mode preference on load (default to dark)
+    (function() {
+        const saved = localStorage.getItem('posproctor-dark-mode');
+        // Default to dark mode (saved !== '0')
+        const useDark = saved !== '0';
+        if (useDark) {
+            document.body.classList.add('dark-mode');
+        }
+        updateDarkToggleUI(useDark);
+    })();
+
+    // === Font size slider ===
+    const FONT_SIZES = [
+        { scale: 0.85, label: '85%' },
+        { scale: 0.92, label: '92%' },
+        { scale: 1.0,  label: '100%' },
+        { scale: 1.1,  label: '110%' },
+        { scale: 1.2,  label: '120%' }
+    ];
+
+    function updateFontSize(index) {
+        const size = FONT_SIZES[index];
+        document.getElementById('fontSizeLabel').textContent = size.label;
+        localStorage.setItem('posproctor-font-size', index);
+        applyFontScale(size.scale);
+    }
+
+    function applyFontScale(scale) {
+        // Apply to store cards only
+        document.querySelectorAll('.store-card .store-name').forEach(el => {
+            el.style.fontSize = (12 * scale) + 'px';
+        });
+        document.querySelectorAll('.store-card .store-ip').forEach(el => {
+            el.style.fontSize = (13 * scale) + 'px';
+        });
+        document.querySelectorAll('.store-card .status-text').forEach(el => {
+            el.style.fontSize = (10 * scale) + 'px';
+        });
+    }
+
+    // Restore font size on load
+    (function() {
+        const saved = localStorage.getItem('posproctor-font-size');
+        const index = saved !== null ? parseInt(saved) : 2; // default 100%
+        document.getElementById('fontSizeSlider').value = index;
+        updateFontSize(index);
+    })();
+
+    document.getElementById('fontSizeSlider').addEventListener('input', function() {
+        updateFontSize(parseInt(this.value));
+    });
+
+    // === State grouping constants ===
+    const STATE_ORDER = ['ID', 'WY', 'NM', 'UT', 'AZ', 'CO', 'MT'];
+    const STATE_NAMES = {
+        'ID': 'Idaho', 'WY': 'Wyoming', 'NM': 'New Mexico',
+        'UT': 'Utah', 'AZ': 'Arizona', 'CO': 'Colorado', 'MT': 'Montana'
+    };
+
+    function extractState(storeName) {
+        const stateMatch = storeName.match(/,\s*([A-Z]{2})(?:\s|$)/i) ||
+                           storeName.match(/\b([A-Z]{2})$/i);
+        if (stateMatch) return stateMatch[1].toUpperCase();
+        const parenMatch = storeName.match(/\(([A-Z]{2})\)/i);
+        if (parenMatch) return parenMatch[1].toUpperCase();
+        return 'Unknown';
+    }
+
+    function extractStoreNumber(storeName) {
+        const match = (storeName || '').match(/(\d+)/);
+        return match ? parseInt(match[1]) : Infinity;
+    }
+
+    function getStateOrderIndex(stateCode) {
+        const idx = STATE_ORDER.indexOf(stateCode.toUpperCase());
+        return idx >= 0 ? idx : STATE_ORDER.length;
+    }
+
+    // === NOC / Big Screen mode ===
+    let nocIdleTimer = null;
+
+    function toggleNocMode() {
+        const isNoc = document.body.classList.toggle('noc-mode');
+        localStorage.setItem('posproctor-noc-mode', isNoc ? '1' : '0');
+        updateNocToggleUI(isNoc);
+
+        if (isNoc) {
+            // Auto-enable dark mode in NOC
+            if (!document.body.classList.contains('dark-mode')) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('posproctor-dark-mode', '1');
+                updateDarkToggleUI(true);
+            }
+            startNocIdleDetection();
+            syncNocFooterStats();
+        } else {
+            stopNocIdleDetection();
+            document.body.classList.remove('noc-idle');
+        }
+    }
+
+    function updateNocToggleUI(isNoc) {
+        const icon = document.getElementById('nocToggleIcon');
+        const label = document.getElementById('nocToggleLabel');
+        if (isNoc) {
+            icon.className = 'fas fa-compress';
+            label.textContent = 'Exit';
+        } else {
+            icon.className = 'fas fa-tv';
+            label.textContent = 'NOC';
+        }
+    }
+
+    function startNocIdleDetection() {
+        const resetIdle = () => {
+            document.body.classList.remove('noc-idle');
+            clearTimeout(nocIdleTimer);
+            nocIdleTimer = setTimeout(() => {
+                if (document.body.classList.contains('noc-mode')) {
+                    document.body.classList.add('noc-idle');
+                }
+            }, 5000);
+        };
+        document.addEventListener('mousemove', resetIdle);
+        document.addEventListener('keydown', resetIdle);
+        document.addEventListener('click', resetIdle);
+        resetIdle();
+        // Store cleanup refs
+        document._nocIdleCleanup = () => {
+            document.removeEventListener('mousemove', resetIdle);
+            document.removeEventListener('keydown', resetIdle);
+            document.removeEventListener('click', resetIdle);
+        };
+    }
+
+    function stopNocIdleDetection() {
+        clearTimeout(nocIdleTimer);
+        if (document._nocIdleCleanup) {
+            document._nocIdleCleanup();
+            document._nocIdleCleanup = null;
+        }
+    }
+
+    function syncNocFooterStats() {
+        // Sync the top-bar pill numbers to the footer NOC pills
+        const pairs = [
+            ['statTotal', 'nocStatTotal'],
+            ['statOnline', 'nocStatOnline'],
+            ['statUnstable', 'nocStatUnstable'],
+            ['statOffline', 'nocStatOffline'],
+            ['statGroups', 'nocStatGroups']
+        ];
+        pairs.forEach(([src, dst]) => {
+            const srcEl = document.getElementById(src);
+            const dstEl = document.getElementById(dst);
+            if (srcEl && dstEl) dstEl.textContent = srcEl.textContent;
+        });
+
+        // Sync pill styles for all-clear state
+        const pillPairs = [
+            ['offlinePill', 'nocOfflinePill'],
+            ['unstablePill', 'nocUnstablePill']
+        ];
+        pillPairs.forEach(([src, dst]) => {
+            const srcPill = document.getElementById(src);
+            const dstPill = document.getElementById(dst);
+            if (srcPill && dstPill) {
+                dstPill.classList.toggle('all-clear', srcPill.classList.contains('all-clear'));
+            }
+        });
+    }
+
+    // Restore NOC mode on load
+    (function() {
+        const saved = localStorage.getItem('posproctor-noc-mode');
+        if (saved === '1') {
+            document.body.classList.add('noc-mode');
+            updateNocToggleUI(true);
+            // Auto-enable dark mode
+            if (!document.body.classList.contains('dark-mode')) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('posproctor-dark-mode', '1');
+                updateDarkToggleUI(true);
+            }
+            startNocIdleDetection();
+        }
+    })();
+
+    // === Global state ===
+    let fleetData = null;
+    let refreshTimer = null;
+
+    function getGrouping() {
+        const selected = document.querySelector('input[name="groupBy"]:checked');
+        return selected ? selected.value : 'none';
+    }
+
+    // === HTTPS Check (server-side, via backend API) ===
+    // The backend performs parallel HTTPS HEAD requests with SSL verification disabled
+    // This is more reliable than client-side checks because:
+    // 1. Browsers block connections to self-signed certs
+    // 2. CORS restrictions don't apply server-side
+    let httpsCheckResults = null;
+
+    async function loadHttpsChecks() {
+        try {
+            const response = await fetch('/api/fleet/https-check');
+            const data = await response.json();
+            if (data.success) {
+                httpsCheckResults = data.checks;
+                return true;
+            }
+        } catch (e) {
+            console.error('HTTPS check failed:', e);
+        }
+        return false;
+    }
+
+    // Apply HTTPS check results to all visible store cards
+    function applyHttpsChecks() {
+        if (!httpsCheckResults) return;
+
+        const cards = document.querySelectorAll('.store-card[data-ip]');
+        cards.forEach(card => {
+            const ip = card.dataset.ip;
+            const prometheusStatus = card.dataset.prometheusStatus;
+            const httpsOk = httpsCheckResults[ip] === true;
+            updateCardStatus(card, prometheusStatus, httpsOk);
+        });
+
+        updateStatsFromCards();
+    }
+
+    // Run HTTPS checks via backend API, then apply results to cards
+    async function runHttpsChecks() {
+        await loadHttpsChecks();
+        applyHttpsChecks();
+    }
+
+    // Update a single card's status based on both checks
+    function updateCardStatus(card, prometheusStatus, httpsOk) {
+        const dot = card.querySelector('.status-dot');
+        const text = card.querySelector('.status-text');
+        const prometheusOk = prometheusStatus === 'online';
+
+        let status, statusText;
+        if (prometheusOk && httpsOk) {
+            status = 'online';
+            statusText = 'Online';
+        } else if (prometheusOk || httpsOk) {
+            status = 'unstable';
+            statusText = 'Unstable';
+        } else {
+            status = 'offline';
+            statusText = 'Offline';
+        }
+
+        // Update card classes
+        card.classList.remove('status-online', 'status-offline', 'status-unstable');
+        card.classList.add('status-' + status);
+
+        // Update dot
+        dot.classList.remove('online', 'offline', 'unstable', 'checking');
+        dot.classList.add(status);
+
+        // Update text
+        text.textContent = statusText;
+
+        // Store the final status for stats calculation
+        card.dataset.finalStatus = status;
+    }
+
+    // Update stat pills by counting cards with each status
+    function updateStatsFromCards() {
+        const cards = document.querySelectorAll('.store-card[data-final-status]');
+        let online = 0, unstable = 0, offline = 0;
+
+        cards.forEach(card => {
+            switch (card.dataset.finalStatus) {
+                case 'online': online++; break;
+                case 'unstable': unstable++; break;
+                case 'offline': offline++; break;
+            }
+        });
+
+        document.getElementById('statOnline').textContent = online;
+        document.getElementById('statUnstable').textContent = unstable;
+        document.getElementById('statOffline').textContent = offline;
+
+        // Dim pills when 0
+        const offlinePill = document.getElementById('offlinePill');
+        const unstablePill = document.getElementById('unstablePill');
+        offlinePill.classList.toggle('all-clear', offline === 0);
+        unstablePill.classList.toggle('all-clear', unstable === 0);
+
+        // Sync NOC footer stats if in NOC mode
+        if (document.body.classList.contains('noc-mode')) {
+            syncNocFooterStats();
+        }
+    }
+
+    // === Load fleet status from API ===
+    function loadFleetStatus() {
+        const loadingDiv = document.getElementById('fleetLoading');
+        const gridContainer = document.getElementById('fleetGridContainer');
+
+        fetch('/api/fleet/status')
+            .then(response => response.json())
+            .then(data => {
+                loadingDiv.style.display = 'none';
+                if (data.success) {
+                    fleetData = data;
+                    // Set initial stats from prometheus (will be refined by HTTPS checks)
+                    updateStats(data.summary);
+                    displayFleetGrid(data);
+                    gridContainer.style.display = 'block';
+                    updateLastRefresh();
+                    // Run HTTPS checks after grid is displayed
+                    runHttpsChecks();
+                } else {
+                    gridContainer.innerHTML = '<p class="text-center text-danger">Failed to load fleet status</p>';
+                    gridContainer.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Fleet status error:', error);
+                loadingDiv.style.display = 'none';
+                gridContainer.innerHTML = '<p class="text-center text-danger">Error loading fleet status</p>';
+                gridContainer.style.display = 'block';
+            });
+    }
+
+    // === Update stat pills (initial values from Prometheus, refined after HTTPS checks) ===
+    function updateStats(summary) {
+        document.getElementById('statTotal').textContent = summary.total;
+        // These will show prometheus counts initially, then get updated by runHttpsChecks()
+        document.getElementById('statOnline').textContent = summary.online;
+        document.getElementById('statUnstable').textContent = 0;
+        document.getElementById('statOffline').textContent = summary.offline;
+
+        // Reset pill styling - will be updated after HTTPS checks
+        document.getElementById('offlinePill').classList.toggle('all-clear', summary.offline === 0);
+        document.getElementById('unstablePill').classList.add('all-clear');
+
+        // Sync NOC footer stats if in NOC mode
+        if (document.body.classList.contains('noc-mode')) {
+            syncNocFooterStats();
+        }
+    }
+
+    // === Display fleet grid with grouping ===
+    function displayFleetGrid(data) {
+        const gridContainer = document.getElementById('fleetGridContainer');
+        const groupBy = getGrouping();
+        const searchTerm = document.getElementById('fleetSearch').value.toLowerCase();
+
+        // Filter by search
+        let stores = data.stores || [];
+        if (searchTerm) {
+            stores = stores.filter(s =>
+                s.store_name.toLowerCase().includes(searchTerm) ||
+                s.ip.toLowerCase().includes(searchTerm) ||
+                (s.brand && s.brand.toLowerCase().includes(searchTerm))
+            );
+        }
+
+        // Group stores
+        const storesByGroup = {};
+        stores.forEach(store => {
+            let groupKey;
+            switch (groupBy) {
+                case 'state':
+                    groupKey = store.group_name || extractState(store.store_name);
+                    break;
+                case 'brand':
+                    groupKey = store.brand || 'Other';
+                    break;
+                case 'none':
+                default:
+                    groupKey = null;
+                    break;
+            }
+
+            if (groupKey === null) {
+                if (!storesByGroup['_all']) storesByGroup['_all'] = [];
+                storesByGroup['_all'].push(store);
+            } else {
+                if (!storesByGroup[groupKey]) storesByGroup[groupKey] = [];
+                storesByGroup[groupKey].push(store);
+            }
+        });
+
+        // Sort groups
+        const sortedGroups = Object.keys(storesByGroup).sort((a, b) => {
+            if (a === '_all') return 0;
+            if (groupBy === 'state') {
+                return getStateOrderIndex(a) - getStateOrderIndex(b);
+            }
+            return a.localeCompare(b);
+        });
+
+        // Build HTML
+        let html = '';
+        for (const group of sortedGroups) {
+            const groupStores = storesByGroup[group];
+            groupStores.sort((a, b) => extractStoreNumber(a.store_name) - extractStoreNumber(b.store_name));
+
+            if (group !== '_all' && groupBy !== 'none') {
+                const onlineCount = groupStores.filter(s => s.status === 'online').length;
+                const stateName = STATE_NAMES[group] || group;
+                const displayName = STATE_NAMES[group] ? `${stateName} (${group})` : group;
+                html += `<div class="group-section">
+                    <div class="group-header">
+                        <span>${displayName}</span>
+                        <span class="group-stats">${groupStores.length} stores &middot; ${onlineCount} online</span>
+                    </div>
+                    <div class="store-grid">`;
+            } else {
+                html += '<div class="store-grid">';
+            }
+
+            groupStores.forEach(store => {
+                // Start with "checking" status, will be updated by HTTPS check
+                html += `<a class="store-card status-${store.status}"
+                            href="https://${store.ip}/ConfigClient.html"
+                            target="_blank"
+                            data-ip="${store.ip}"
+                            data-prometheus-status="${store.status}"
+                            title="${store.store_name} &#8212; ${store.ip}">
+                    <div class="store-name">${store.store_name}</div>
+                    <div class="store-ip">${store.ip}</div>
+                    <span class="status-dot checking"></span><span class="status-text">Checking...</span>
+                </a>`;
+            });
+
+            html += '</div>';
+            if (group !== '_all' && groupBy !== 'none') {
+                html += '</div>';
+            }
+        }
+
+        gridContainer.innerHTML = html || '<p class="text-center text-muted">No stores found</p>';
+
+        // Re-apply font scale after grid rebuild
+        const savedFontIndex = localStorage.getItem('posproctor-font-size');
+        const fontIndex = savedFontIndex !== null ? parseInt(savedFontIndex) : 2;
+        applyFontScale(FONT_SIZES[fontIndex].scale);
+    }
+
+    // === Event handlers ===
+    function updateGrouping() {
+        if (fleetData) displayFleetGrid(fleetData);
+    }
+
+    function onSearchInput() {
+        if (fleetData) displayFleetGrid(fleetData);
+    }
+
+    // === Auto-refresh ===
+    function updateLastRefresh() {
+        document.getElementById('lastRefreshTime').innerHTML =
+            '<i class="fas fa-clock"></i> ' + new Date().toLocaleTimeString();
+    }
+
+    function startAutoRefresh() {
+        refreshTimer = setInterval(loadFleetStatus, 30000);
+    }
+
+    // === Initialize ===
+    document.addEventListener('DOMContentLoaded', function() {
+        loadFleetStatus();
+        startAutoRefresh();
+        // Initial sync for NOC footer stats (groups count is server-rendered)
+        if (document.body.classList.contains('noc-mode')) {
+            syncNocFooterStats();
+        }
+    });
+</script>
+{% endblock %}

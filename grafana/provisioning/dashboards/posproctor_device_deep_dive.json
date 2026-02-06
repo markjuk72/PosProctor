@@ -1,0 +1,399 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "panels": [],
+      "title": "Device Availability Timeline",
+      "type": "row"
+    },
+    {
+      "id": 2,
+      "gridPos": { "h": 20, "w": 24, "x": 0, "y": 1 },
+      "type": "state-timeline",
+      "title": "Device Type Availability Timeline - $store",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "description": "Shows availability status of all device types for the selected store over time. Green = Online, Red = Offline. Use the $store filter at the top to select a specific store. FP = Fueling Point.",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (store) (posproctor_controller_status{store=~\"$store\"})",
+          "legendFormat": "Controller"
+        },
+        {
+          "refId": "B",
+          "expr": "max by (store, fueling_point_id) (posproctor_pump_status{store=~\"$store\"})",
+          "legendFormat": "Pump FP-{{fueling_point_id}}"
+        },
+        {
+          "refId": "C",
+          "expr": "max by (store, fueling_point_id) (posproctor_dcr_status{store=~\"$store\"})",
+          "legendFormat": "DCR FP-{{fueling_point_id}}"
+        },
+        {
+          "refId": "D",
+          "expr": "max by (store, display_id) (posproctor_price_display_status{store=~\"$store\"})",
+          "legendFormat": "Fuel Sign {{display_id}}"
+        },
+        {
+          "refId": "E",
+          "expr": "max by (store) (posproctor_primary_fep_status{store=~\"$store\"})",
+          "legendFormat": "Card Processor"
+        },
+        {
+          "refId": "F",
+          "expr": "max by (store) (posproctor_loyalty_fep_status{store=~\"$store\"})",
+          "legendFormat": "Loyalty FEP"
+        },
+        {
+          "refId": "G",
+          "expr": "max by (store, terminal_id) (posproctor_pos_terminal_status{store=~\"$store\"})",
+          "legendFormat": "POS Terminal {{terminal_id}}"
+        },
+        {
+          "refId": "H",
+          "expr": "max by (store, pinpad_id) (posproctor_pinpad_status{store=~\"$store\"})",
+          "legendFormat": "Pinpad {{pinpad_id}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 100,
+            "spanNulls": false,
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            }
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Offline",
+                  "color": "red"
+                },
+                "1": {
+                  "text": "Online",
+                  "color": "green"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "red"
+              },
+              {
+                "value": 0.5,
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "mergeValues": true,
+        "showValue": "never",
+        "alignValue": "left",
+        "rowHeight": 0.9,
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 21 },
+      "id": 3,
+      "panels": [],
+      "title": "Device Statistics",
+      "type": "row"
+    },
+    {
+      "id": 4,
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 22 },
+      "type": "stat",
+      "title": "Total Devices - $store",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(max by (store) (posproctor_controller_status{store=~\"$store\"}))",
+          "legendFormat": "Controller"
+        },
+        {
+          "refId": "B",
+          "expr": "count(max by (store, fueling_point_id) (posproctor_pump_status{store=~\"$store\"}))",
+          "legendFormat": "Pumps"
+        },
+        {
+          "refId": "C",
+          "expr": "count(max by (store, fueling_point_id) (posproctor_dcr_status{store=~\"$store\"}))",
+          "legendFormat": "DCRs"
+        },
+        {
+          "refId": "D",
+          "expr": "count(max by (store, display_id) (posproctor_price_display_status{store=~\"$store\"}))",
+          "legendFormat": "Fuel Signs"
+        },
+        {
+          "refId": "E",
+          "expr": "count(max by (store) (posproctor_primary_fep_status{store=~\"$store\"}))",
+          "legendFormat": "Card Processor"
+        },
+        {
+          "refId": "F",
+          "expr": "count(max by (store) (posproctor_loyalty_fep_status{store=~\"$store\"}))",
+          "legendFormat": "Loyalty FEP"
+        },
+        {
+          "refId": "G",
+          "expr": "count(max by (store, terminal_id) (posproctor_pos_terminal_status{store=~\"$store\"}))",
+          "legendFormat": "POS Terminals"
+        },
+        {
+          "refId": "H",
+          "expr": "count(max by (store, pinpad_id) (posproctor_pinpad_status{store=~\"$store\"}))",
+          "legendFormat": "Pinpads"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 5,
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 22 },
+      "type": "stat",
+      "title": "Online Devices - $store",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(max by (store) (posproctor_controller_status{store=~\"$store\"}) == 1)",
+          "legendFormat": "Controller"
+        },
+        {
+          "refId": "B",
+          "expr": "count(max by (store, fueling_point_id) (posproctor_pump_status{store=~\"$store\"}) == 1)",
+          "legendFormat": "Pumps"
+        },
+        {
+          "refId": "C",
+          "expr": "count(max by (store, fueling_point_id) (posproctor_dcr_status{store=~\"$store\"}) == 1)",
+          "legendFormat": "DCRs"
+        },
+        {
+          "refId": "D",
+          "expr": "count(max by (store, display_id) (posproctor_price_display_status{store=~\"$store\"}) == 1)",
+          "legendFormat": "Fuel Signs"
+        },
+        {
+          "refId": "E",
+          "expr": "count(max by (store) (posproctor_primary_fep_status{store=~\"$store\"}) == 1)",
+          "legendFormat": "Card Processor"
+        },
+        {
+          "refId": "F",
+          "expr": "count(max by (store) (posproctor_loyalty_fep_status{store=~\"$store\"}) == 1)",
+          "legendFormat": "Loyalty FEP"
+        },
+        {
+          "refId": "G",
+          "expr": "count(max by (store, terminal_id) (posproctor_pos_terminal_status{store=~\"$store\"}) == 1)",
+          "legendFormat": "POS Terminals"
+        },
+        {
+          "refId": "H",
+          "expr": "count(max by (store, pinpad_id) (posproctor_pinpad_status{store=~\"$store\"}) == 1)",
+          "legendFormat": "Pinpads"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 6,
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 22 },
+      "type": "stat",
+      "title": "Offline Devices - $store",
+      "datasource": { "type": "prometheus", "uid": "prometheus-posproctor2" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(max by (store) (posproctor_controller_status{store=~\"$store\"}) == 0)",
+          "legendFormat": "Controller"
+        },
+        {
+          "refId": "B",
+          "expr": "count(max by (store, fueling_point_id) (posproctor_pump_status{store=~\"$store\"}) == 0)",
+          "legendFormat": "Pumps"
+        },
+        {
+          "refId": "C",
+          "expr": "count(max by (store, fueling_point_id) (posproctor_dcr_status{store=~\"$store\"}) == 0)",
+          "legendFormat": "DCRs"
+        },
+        {
+          "refId": "D",
+          "expr": "count(max by (store, display_id) (posproctor_price_display_status{store=~\"$store\"}) == 0)",
+          "legendFormat": "Fuel Signs"
+        },
+        {
+          "refId": "E",
+          "expr": "count(max by (store) (posproctor_primary_fep_status{store=~\"$store\"}) == 0)",
+          "legendFormat": "Card Processor"
+        },
+        {
+          "refId": "F",
+          "expr": "count(max by (store) (posproctor_loyalty_fep_status{store=~\"$store\"}) == 0)",
+          "legendFormat": "Loyalty FEP"
+        },
+        {
+          "refId": "G",
+          "expr": "count(max by (store, terminal_id) (posproctor_pos_terminal_status{store=~\"$store\"}) == 0)",
+          "legendFormat": "POS Terminals"
+        },
+        {
+          "refId": "H",
+          "expr": "count(max by (store, pinpad_id) (posproctor_pinpad_status{store=~\"$store\"}) == 0)",
+          "legendFormat": "Pinpads"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": ["posproctor", "devices", "deep-dive"],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "Store 105",
+          "value": "Store 105"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus-posproctor2"
+        },
+        "definition": "label_values(posproctor_scrape_success, store)",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "store",
+        "options": [],
+        "query": "label_values(posproctor_scrape_success, store)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "PosProctor Device Deep Dive",
+  "uid": "4-posproctor-device-deep-dive",
+  "version": 1
+}

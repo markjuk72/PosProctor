@@ -1,0 +1,36 @@
+global:
+  scrape_interval: 60s
+  evaluation_interval: 60s
+  external_labels:
+    cluster: 'posproctor2'
+    environment: 'production'
+
+scrape_configs:
+  # POSProctor Monitoring Service
+  - job_name: 'posproctor-monitoring'
+    static_configs:
+      - targets: ['monitoring:8000']
+        labels:
+          service: 'monitoring'
+    scrape_interval: 60s
+    scrape_timeout: 30s
+
+  # TLOG Service
+  - job_name: 'posproctor-tlog'
+    static_configs:
+      - targets: ['tlog:8001']
+        labels:
+          service: 'tlog'
+    scrape_interval: 60s
+
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node Exporter (system metrics)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node_exporter:9100']
+        labels:
+          instance: 'posproctor-host'

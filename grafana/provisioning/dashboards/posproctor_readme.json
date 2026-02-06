@@ -1,0 +1,94 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "text",
+        "uid": "-- Dashboard --"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "code": {
+          "language": "html",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"text-align: center; padding: 10px;\">\n  <img src=\"/public/img/posproctor/posproctor_logo_color_transparent.png\" alt=\"PosProctor Logo\" style=\"max-width: 600px; max-height: 300px; height: auto; width: auto; object-fit: contain; margin-bottom: 10px;\">\n</div>",
+        "mode": "html"
+      },
+      "pluginVersion": "10.0.0",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "text",
+        "uid": "-- Dashboard --"
+      },
+      "gridPos": {
+        "h": 25,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "options": {
+        "code": {
+          "language": "markdown",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "A comprehensive, production-ready monitoring solution for POS systems. This Docker-based stack provides real-time metrics, performance analytics, centralized logging, and intelligent alerting across multiple POS deployments.\n\n## 🚀 Features\n\n### **Real-Time Monitoring**\n- **Device Health**: Controllers, pumps, DCRs, fuel price displays, loyalty FEP status\n- **Payment Processing**: Primary card processor monitoring (configurable per deployment)\n- **Performance Analytics**: Query response times, scrape cycle optimization, failure analysis\n- **Fleet Overview**: Health percentages, success rates, stores requiring attention\n- **System Resources**: Python process monitoring, garbage collection, CPU usage\n\n### **Intelligent Alerting**\n- **Email Notifications**: Configurable SMTP with customizable templates\n- **Severity-Based Routing**: Critical/Warning/Info alerts with different repeat intervals\n- **Rich Alert Context**: Detailed descriptions with direct links to POS system UIs\n\n### **Centralized Logging**\n- **Log Aggregation**: Syslog collection from all POS systems via Vector\n- **IP-to-Store Mapping**: Automatic enrichment with store names and groups\n- **Searchable Interface**: Loki-powered log exploration in Grafana\n\n## 📊 Dashboard Suite\n\n### **PosProctor Monitor**\n- Fleet health overview with device availability percentages\n- Card Processor health monitoring across all fuel brands\n- Real-time device status trends over time\n- Interactive table showing stores requiring immediate attention\n- Template variables for filtering by geographic groups and fuel brands\n\n### **PosProctor Heatmap**\n- Visual heatmap representation of all POS system statuses\n- Color-coded device status across controllers, pumps, DCRs, and price displays\n- Brand and group filtering with direct links to POS system UIs\n- At-a-glance identification of problematic devices\n\n### **PosProctor Internal Health**\n- Monitoring application status and Prometheus health\n- Scrape cycle performance analysis and timing optimization\n- Individual POS system query response times by endpoint\n- System resource utilization and Python runtime metrics\n\n### **PosProctor Security Logs**\n- Centralized security log analysis with store name enrichment\n- Real-time syslog streaming from all POS systems via Vector\n- Automatic IP-to-store mapping from commanders.csv\n- RFC 3164 compliant syslog collection on UDP port 514\n- Custom hyphen-delimited log format parsing and display\n\n## 🏗️ Architecture\n\n### **Core Services**\n- **`posproctor-app`**: Multi-threaded Python poller with Prometheus metrics (Port 8000)\n- **`prometheus`**: Time-series metrics storage and querying (Port 9090) \n- **`grafana`**: Visualization platform with pre-configured dashboards (Port 3000)\n- **`vector`**: Log collection, enrichment, and forwarding pipeline\n- **`loki`**: High-performance log aggregation and storage (Port 3100)\n\n### **Data Flow**\n```\nPOS Systems → posproctor-app → Prometheus → Grafana\n     ↓\n   Vector → Loki → Grafana\n```\n\n## 🔧 Configuration Files\n\n### **Core Configuration**\n- `commanders.csv`: Target systems (IP, store, group, enabled status)\n- `credentials.yaml`: API authentication for POS systems\n- `config.yaml`: Application settings (timeout, scrape interval)\n- `.env`: Environment variables for SMTP and alert configuration\n\n### **Service Configuration** \n- `prometheus.yml`: Metrics scraping configuration\n- `config_vector.yaml`: Log processing and enrichment pipeline\n- `config_loki.yaml`: Log storage and retention policies\n- `grafana-provisioning/`: Datasources, dashboards, and alerting rules\n\n## 🚀 Quick Start\n\n### **Prerequisites**\n- Docker and Docker Compose\n- SMTP server for email alerts (optional)\n\n### **Setup**\n1. **Clone and Configure**:\n   ```bash\n   git clone <your-repo-url>\n   cd posproctor\n   cp .env.example .env  # Configure SMTP settings\n   ```\n\n2. **Configure POS Systems**:\n   ```bash\n   # Edit commanders.csv with your POS system details\n   # Format: ip,store,group,enabled\n   10.0.0.1,Store 001,Region A,true\n   ```\n\n3. **Launch Stack**:\n   ```bash\n   docker-compose up -d\n   ```\n\n4. **Configure Email Alerts** (optional):\n   ```bash\n   # Set your email and run setup script\n   ALERT_EMAIL=admin@company.com ./setup-alerts.sh\n   ```\n\n### **Access Points**\n- **Grafana**: http://localhost:3000 (admin/your-password)\n- **Prometheus**: http://localhost:9090  \n- **Metrics Endpoint**: http://localhost:8000/metrics\n- **Loki**: http://localhost:3100\n\n## 📈 Performance Metrics\n\nThe monitoring application exposes comprehensive metrics for optimization:\n\n### **Query Performance**\n- `posproctor_query_duration_seconds`: Response times per POS system and endpoint\n- `posproctor_query_failures_total`: Failure counts classified by error type\n- `posproctor_scrape_cycle_duration_seconds`: Full cycle timing for interval tuning\n\n### **Health Indicators**\n- `posproctor_scrape_success`: Success/failure status per POS system\n- `posproctor_primary_fep_status`: Primary card processor connectivity by brand\n- `posproctor_loyalty_fep_status`: Loyalty system connectivity\n- `posproctor_total_systems`: Count of enabled/disabled systems\n- `posproctor_concurrent_queries`: Real-time active query tracking\n\n### **Error Classification**\n- `posproctor_auth_failures_total`: Authentication issues\n- `posproctor_timeout_errors_total`: Network timeout tracking\n- `posproctor_connection_errors_total`: Connectivity problems\n\n## 🔔 Alert Configuration\n\n### **How Alerts Work**\n\nPOSProctor uses intelligent alert grouping and time-based filtering to prevent notification fatigue while ensuring critical issues are communicated promptly.\n\n#### **Alert Trigger Delays**\nEach device type has a delay before an alert fires to prevent false positives from temporary network issues:\n- **Controller Offline**: 20 minutes - Highest priority, affects entire forecourt\n- **Commander Unreachable**: 10 minutes - Network/power issue, complete loss of monitoring\n- **Pump Offline**: 15 minutes - Individual pump out of service\n- **DCR Offline**: 15 minutes - Payment processing affected at pump\n- **Fuel Sign Offline**: 10 minutes - Price display unavailable\n- **Loyalty FEP Offline**: 15 minutes - Rewards system unavailable\n\n#### **Email Grouping Behavior**\nAlerts are automatically grouped by type (`alertname`) to reduce email volume:\n\n**Example Scenario: 5 pumps go offline at Store 106**\n1. Each pump must be offline for 15 minutes before triggering\n2. All pump alerts that fire within 10 seconds of each other get grouped into ONE email\n3. The grouped email contains details for all 5 pumps with store location and IP addresses\n4. If pumps remain offline, update emails are sent based on severity (see below)\n\n**Example Scenario: Controller offline, then 2 pumps fail 20 minutes later**\n1. Controller alert fires separately (critical severity, immediate attention needed)\n2. 20 minutes later, both pump alerts are grouped together in a second email\n3. Each email contains full device details: store name, commander IP, device type, priority level\n\n#### **Severity Levels & Repeat Intervals**\n\n**🔴 Critical** (Controller Offline, Commander Unreachable):\n- Initial alert sent immediately after trigger delay\n- Grouped emails sent every 5 minutes if multiple critical alerts fire together\n- Repeat notifications every 30 minutes while issue persists\n- Use case: Entire forecourt down, requires immediate action\n\n**🟡 Warning** (Pump, DCR, Fuel Sign):\n- Initial alert sent immediately after trigger delay\n- Grouped emails sent every 10 minutes if multiple warnings fire together\n- Repeat notifications every 1 hour while issue persists\n- Use case: Individual device failures, operational impact but not catastrophic\n\n**🔵 Info** (Loyalty FEP):\n- Initial alert sent immediately after trigger delay\n- Grouped emails sent every 30 minutes if multiple info alerts fire together\n- Repeat notifications every 4 hours while issue persists\n- Use case: Non-critical systems, sales continue but loyalty benefits unavailable\n\n#### **Alert Content**\nEach alert email includes:\n- **Store Location**: Store name and geographic group\n- **Commander IP**: Direct link to POS system UI\n- **Device Type**: Specific device (Controller, Pump #X, DCR, etc.)\n- **Impact Assessment**: Business impact description\n- **Priority Level**: HIGH/MEDIUM/LOW based on severity\n- **Timestamp**: When the alert fired\n- **Grafana Link**: Direct link to alert in monitoring dashboard\n\n#### **NoData Handling**\nIf POSProctor loses connection to a commander and metrics stop being collected entirely:\n- Alerts transition to \"NoData\" state instead of firing\n- No email notifications are sent for missing data\n- Prevents false alerts with incomplete information\n- Only actual device failures (metric value = 0) trigger alerts with full context\n\n### **SMTP Configuration**\nSupports major email providers:\n- **Gmail**: Use app passwords for authentication\n- **Office 365**: Standard SMTP configuration\n- **SendGrid/Mailgun**: API-based sending\n- **Custom SMTP**: Any RFC-compliant server\n\nConfigure email settings in `.env`:\n```bash\nSMTP_HOST=smtp.gmail.com:587\nSMTP_USER=your-email@gmail.com\nSMTP_PASSWORD=your-app-password\nSMTP_FROM=posproctor-alerts@company.com\nALERT_EMAIL=admin@company.com\n```",
+        "mode": "markdown"
+      },
+      "pluginVersion": "10.0.0",
+      "title": "PosProctor Documentation",
+      "transparent": true,
+      "type": "text"
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": ["documentation", "readme", "posproctor"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "hidden": true
+  },
+  "timezone": "browser",
+  "title": "PosProctor README",
+  "uid": "0-posproctor-readme",
+  "version": 1
+}
